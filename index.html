@@ -1,0 +1,2262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com http://localhost:* http://127.0.0.1:*; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Quotes</title>
+<meta name="description" content="Your quote library with Discover. Works offline; syncs through your own Google Drive.">
+<meta name="theme-color" content="#8E2C2A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --paper:#F4EEE3; --surface:#FBF8F2; --sunk:#EBE3D5; --raise:#FFFFFF;
+  --ink:#221C17; --ink-2:#4A4038; --muted:#7B6F63; --faint:#A89C8D;
+  --rule:#DDD2C1; --rule-2:#E7DECF;
+  --accent:#8E2C2A; --accent-ink:#FFFFFF; --accent-soft:#F1DED8; --accent-line:#D9B3AA;
+  --ok:#3E6B4A; --ok-soft:#DFEBDF; --warn:#8F5F0E; --warn-soft:#F6E7C8; --bad:#A3302C; --bad-soft:#F6DAD6;
+  --mark:#F3D98B;
+  --sh-1:0 1px 2px rgba(60,40,20,.08); --sh-2:0 8px 28px rgba(60,40,20,.16),0 2px 6px rgba(60,40,20,.08);
+  --font-ui:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,"Microsoft JhengHei","PingFang TC",sans-serif;
+  --font-quote:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,"Noto Serif TC","Source Han Serif TC","Songti TC","PMingLiU","SimSun",serif;
+  --rail:252px; --reader:440px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --paper:#16120E; --surface:#1E1914; --sunk:#29221B; --raise:#241E18;
+  --ink:#EFE7DA; --ink-2:#CFC3B2; --muted:#9D9081; --faint:#6E6356;
+  --rule:#3A3027; --rule-2:#2F271F;
+  --accent:#E08A7C; --accent-ink:#1E1914; --accent-soft:#3A2420; --accent-line:#6B3A32;
+  --ok:#8CC49A; --ok-soft:#1F3125; --warn:#E5B85C; --warn-soft:#3A2D14; --bad:#F08C84; --bad-soft:#3E1E1B;
+  --mark:#6B5418;
+  --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-2:0 10px 30px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.4);
+  color-scheme:dark;
+}}
+:root[data-theme=dark]{
+  --paper:#16120E; --surface:#1E1914; --sunk:#29221B; --raise:#241E18;
+  --ink:#EFE7DA; --ink-2:#CFC3B2; --muted:#9D9081; --faint:#6E6356;
+  --rule:#3A3027; --rule-2:#2F271F;
+  --accent:#E08A7C; --accent-ink:#1E1914; --accent-soft:#3A2420; --accent-line:#6B3A32;
+  --ok:#8CC49A; --ok-soft:#1F3125; --warn:#E5B85C; --warn-soft:#3A2D14; --bad:#F08C84; --bad-soft:#3E1E1B;
+  --mark:#6B5418;
+  --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-2:0 10px 30px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font:14px/1.5 var(--font-ui);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:default;opacity:.45}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+kbd{font:11px/1 var(--font-ui);padding:2px 5px;border:1px solid var(--rule);border-bottom-width:2px;border-radius:4px;color:var(--muted);background:var(--surface)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- frame ---------- */
+.app{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);height:100vh;height:100dvh}
+.app.reading{grid-template-columns:var(--rail) minmax(0,1fr) var(--reader)}
+.rail{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--rule);background:var(--surface)}
+.rail-top{padding:18px 16px 10px}
+.brand{display:flex;align-items:baseline;gap:8px;margin:0 0 14px 2px;font-family:var(--font-quote);font-size:23px;font-weight:600;letter-spacing:.01em;color:var(--ink)}
+.brand .mk{font-size:40px;line-height:0;position:relative;top:13px;color:var(--accent)}
+.brand small{font:600 10px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-left:auto}
+.capture{width:100%;justify-content:center}
+.nav{display:flex;flex-direction:column;gap:2px;padding:4px 10px 10px;border-bottom:1px solid var(--rule-2)}
+.nav button{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border:0;border-radius:8px;background:none;color:var(--ink-2);text-align:left;font-weight:550}
+.nav button:hover{background:var(--sunk);color:var(--ink)}
+.nav button.on{background:var(--accent-soft);color:var(--ink)}
+.nav button.on svg{color:var(--accent)}
+.nav .ct{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.facets{flex:1;min-height:0;overflow:auto;padding:6px 10px 12px}
+.facet h3{display:flex;align-items:center;margin:14px 10px 4px;font:650 10.5px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.facet h3 button{margin-left:auto;border:0;background:none;color:var(--muted);font:600 11px var(--font-ui);letter-spacing:0;text-transform:none;padding:0}
+.facet h3 button:hover{color:var(--accent)}
+.fct{display:flex;align-items:center;gap:8px;width:100%;min-height:28px;padding:3px 10px;border:0;border-radius:7px;background:none;color:var(--ink-2);text-align:left;font-size:13px}
+.fct span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fct .n{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.fct:hover{background:var(--sunk);color:var(--ink)}
+.fct.on{background:var(--ink);color:var(--paper)}
+.fct.on .n{color:var(--paper);opacity:.7}
+.fct.blank span:first-child{font-style:italic;color:var(--muted)}
+.fct.on.blank span:first-child{color:var(--paper)}
+.rail-foot{display:flex;align-items:center;gap:6px;padding:10px 12px;border-top:1px solid var(--rule-2)}
+
+/* sync pill */
+.pill{display:flex;align-items:center;gap:7px;flex:1;min-width:0;height:32px;padding:0 10px;border:1px solid var(--rule);border-radius:16px;background:var(--surface);color:var(--ink-2);font-size:12.5px;font-weight:550;text-align:left}
+.pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+.pill.local .dot{background:var(--faint)}
+.pill.busy .dot{background:var(--warn);animation:pulse 1.1s ease-in-out infinite}
+.pill.off .dot{background:var(--warn)}
+.pill.err{border-color:var(--bad);color:var(--bad)} .pill.err .dot{background:var(--bad)}
+.pill.conf{border-color:var(--warn);color:var(--warn)} .pill.conf .dot{background:var(--warn)}
+.pill:hover{background:var(--sunk)}
+@keyframes pulse{50%{opacity:.35}}
+.ib{display:inline-grid;place-items:center;width:34px;height:34px;border:0;border-radius:9px;background:none;color:var(--ink-2);flex:none}
+.ib:hover:not(:disabled){background:var(--sunk);color:var(--ink)}
+
+/* buttons, inputs */
+.btn{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border:1px solid var(--rule);border-radius:9px;background:var(--surface);color:var(--ink);font-weight:560;white-space:nowrap}
+.btn:hover:not(:disabled){background:var(--sunk)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);background:var(--accent)}
+.btn.ghost{border-color:transparent;background:none}
+.btn.ghost:hover:not(:disabled){background:var(--sunk)}
+.btn.danger{color:var(--bad)}
+.btn.sm{height:28px;padding:0 9px;font-size:12.5px;border-radius:7px}
+.btn svg{width:16px;height:16px}
+.inp,.ta{width:100%;padding:8px 11px;border:1px solid var(--rule);border-radius:9px;background:var(--raise);color:var(--ink);font:inherit}
+.inp:focus,.ta:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ta{resize:vertical;min-height:92px;line-height:1.5}
+.ta.quote{font:18px/1.5 var(--font-quote)}
+.field{display:flex;flex-direction:column;gap:5px;margin:0 0 12px}
+.field>span{font-size:12px;font-weight:600;color:var(--ink-2)}
+.field .hint{margin:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0}
+.hint.ok{color:var(--ok)} .hint.bad{color:var(--bad)} .hint.warn{color:var(--warn)}
+
+/* ---------- main ---------- */
+.main{min-width:0;min-height:0;display:flex;flex-direction:column}
+.mtop{display:none}
+.banners:empty{display:none}
+.banner{display:flex;align-items:center;gap:12px;padding:9px 22px;border-bottom:1px solid var(--rule);font-size:13px}
+.banner.warn{background:var(--warn-soft)} .banner.bad{background:var(--bad-soft)} .banner.info{background:var(--accent-soft)}
+.banner b{font-weight:650}
+.banner .btn{margin-left:auto}
+.view{flex:1;min-height:0;overflow:auto;scroll-behavior:smooth}
+
+/* ---------- discover ---------- */
+.disc{max-width:860px;margin:0 auto;padding:34px 40px 60px}
+.dhead{display:flex;align-items:baseline;gap:14px;margin-bottom:18px}
+.dhead h1{margin:0;font:600 30px/1.1 var(--font-quote);letter-spacing:-.01em}
+.dhead .date{color:var(--muted);font-size:13.5px}
+.dots{display:flex;gap:6px;margin-left:auto;align-items:center}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--rule)}
+.dots i.on{background:var(--accent)} .dots i.seen{background:var(--accent-line)}
+.dots .lbl{font-size:12px;color:var(--muted);margin-right:6px;font-variant-numeric:tabular-nums}
+.card{position:relative;background:var(--surface);border:1px solid var(--rule);border-radius:16px;box-shadow:var(--sh-1)}
+.hero{padding:46px 54px 26px;overflow:hidden}
+.hero::before{content:"\201C";position:absolute;left:18px;top:-34px;font:200px/1 var(--font-quote);color:var(--accent);opacity:.12;pointer-events:none}
+.hero .via{position:absolute;right:18px;top:14px;font-size:11px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.qtext{margin:0;font-family:var(--font-quote);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}
+.hero .qtext{position:relative;font-size:var(--qs,30px);line-height:1.42}
+.attr{margin:20px 0 0;font-size:15px;color:var(--ink-2)}
+.attr .src{color:var(--muted)}
+.attr.none{color:var(--faint);font-style:italic;font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 10px;border:1px solid var(--rule);border-radius:12px;background:var(--paper);color:var(--ink-2);font-size:12px;font-weight:550}
+button.tag:hover{border-color:var(--accent);color:var(--accent)}
+.tag.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:26px;padding-top:16px;border-top:1px solid var(--rule-2)}
+.acts .sp{flex:1}
+.empty{max-width:560px;margin:70px auto;padding:0 30px;text-align:center}
+.empty h1{font:600 30px/1.2 var(--font-quote);margin:0 0 10px}
+.empty p{color:var(--ink-2);margin:0 0 22px}
+.empty .btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.empty .big-q{font:120px/0.6 var(--font-quote);color:var(--accent);opacity:.5;margin-bottom:20px}
+
+.sec{margin-top:34px}
+.sec h2{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;font:650 11px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sec h2 .aside{margin-left:auto;font-weight:500;letter-spacing:0;text-transform:none;font-size:12px;color:var(--faint)}
+.rel{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.rcard{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid var(--rule);border-radius:12px;background:var(--surface);text-align:left;color:var(--ink)}
+.rcard:hover{border-color:var(--accent-line);box-shadow:var(--sh-1)}
+.rcard .qtext{font-size:15px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.why{font-size:11.5px;color:var(--accent);font-weight:600}
+.why::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:1px;opacity:.7}
+.hist{display:flex;flex-direction:column}
+.hrow{display:flex;gap:12px;align-items:baseline;padding:7px 4px;border:0;border-bottom:1px solid var(--rule-2);background:none;text-align:left;color:var(--ink-2)}
+.hrow:hover{color:var(--ink);background:var(--sunk)}
+.hrow .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-quote);font-size:14.5px}
+.hrow .w{font-size:11.5px;color:var(--faint);white-space:nowrap}
+
+/* ---------- library ---------- */
+.lib{max-width:900px;margin:0 auto;padding:24px 34px 60px}
+.lhead{position:sticky;top:0;z-index:3;margin:-24px -34px 0;padding:20px 34px 12px;background:linear-gradient(var(--paper) 82%,transparent)}
+.search{position:relative}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search .inp{height:44px;padding-left:42px;padding-right:44px;border-radius:12px;font-size:15px;background:var(--surface)}
+.search kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%)}
+.search .clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px}
+.ltools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--muted)}
+.ltools .n{font-variant-numeric:tabular-nums}
+.ltools .sp{flex:1}
+.fchip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 6px 0 10px;border-radius:13px;background:var(--ink);color:var(--paper);font-size:12.5px;font-weight:550;border:0}
+.fchip svg{width:14px;height:14px;opacity:.7}
+.fchip:hover svg{opacity:1}
+.qlist{list-style:none;margin:6px 0 0;padding:0}
+.qrow{display:block;width:100%;padding:16px 18px;margin:0 0 8px;border:1px solid transparent;border-radius:12px;background:none;text-align:left;color:var(--ink)}
+.qrow:hover{background:var(--surface);border-color:var(--rule)}
+.qrow.sel{background:var(--surface);border-color:var(--accent-line);box-shadow:inset 3px 0 0 var(--accent)}
+.qrow .qtext{font-size:17px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.meta .who{color:var(--ink-2);font-weight:550}
+.meta .tg{color:var(--accent)}
+.meta .del{color:var(--bad)}
+mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+.more{display:flex;justify-content:center;margin:14px 0}
+.none{padding:50px 10px;text-align:center;color:var(--muted)}
+
+/* ---------- reader ---------- */
+.reader{display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--rule);background:var(--surface)}
+.reader[hidden]{display:none}
+.rtop{display:flex;align-items:center;gap:4px;padding:10px 12px;border-bottom:1px solid var(--rule-2)}
+.rtop .ttl{font:650 11px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-left:6px}
+.rtop .sp{flex:1}
+.rbody{flex:1;min-height:0;overflow:auto;padding:24px 26px 40px}
+.rbody .qtext{font-size:22px;line-height:1.5}
+.rbody .attr{font-size:14px}
+.note{margin-top:18px;padding:12px 14px;border-left:3px solid var(--accent-line);background:var(--paper);border-radius:0 8px 8px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13.5px;color:var(--ink-2)}
+.note::before{content:"Note";display:block;font:650 10px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.details{margin-top:18px;font-size:12.5px;color:var(--muted)}
+.details summary{cursor:pointer;font-weight:600;color:var(--ink-2)}
+.details dl{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;margin:10px 0 0}
+.details dt{color:var(--faint)} .details dd{margin:0;overflow-wrap:anywhere;color:var(--ink-2)}
+.rbody .rel{grid-template-columns:1fr}
+.rbody .rcard .qtext{font-size:14.5px}
+.trashnote{margin:0 0 16px;padding:10px 12px;border-radius:9px;background:var(--bad-soft);color:var(--ink);font-size:13px}
+
+/* ---------- modal ---------- */
+.scrim{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:rgba(30,20,12,.42);animation:fade .12s ease-out}
+@keyframes fade{from{opacity:0}}
+.modal{display:flex;flex-direction:column;width:min(560px,100%);max-height:min(90vh,900px);background:var(--surface);border-radius:16px;box-shadow:var(--sh-2);overflow:hidden}
+.modal.wide{width:min(760px,100%)}
+.mhead{display:flex;align-items:center;gap:10px;padding:16px 18px 10px 22px}
+.mhead h2{margin:0;font:600 21px/1.2 var(--font-quote)}
+.mhead .ib{margin-left:auto}
+.mbody{flex:1;min-height:0;overflow:auto;padding:6px 22px 18px}
+.mfoot{display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:12px 18px;border-top:1px solid var(--rule-2);background:var(--paper)}
+.mfoot .left{margin-right:auto;font-size:12.5px;color:var(--muted)}
+.mtext{margin:0 0 12px;color:var(--ink-2)}
+.tabs{display:flex;gap:2px;padding:0 18px;border-bottom:1px solid var(--rule-2);overflow-x:auto}
+.tabs button{height:38px;padding:0 12px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font-weight:600;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.box{padding:12px 14px;border:1px solid var(--rule);border-radius:11px;background:var(--paper);margin:0 0 12px}
+.box h4{margin:0 0 6px;font-size:13px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 12px;font-size:13px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;overflow-wrap:anywhere}
+.steps{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--ink-2)}
+.steps li{margin:0 0 6px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl td,.tbl th{padding:7px 8px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
+.tbl th{font-weight:600;color:var(--muted);font-size:12px}
+.tbl td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:650}
+.tbl tr.zero td{color:var(--faint)} .tbl tr.zero td.n{font-weight:400}
+.loglist{font:12px/1.5 ui-monospace,Consolas,monospace;max-height:340px;overflow:auto;padding:10px;border:1px solid var(--rule);border-radius:9px;background:var(--paper);white-space:pre-wrap}
+.seg{display:inline-flex;padding:2px;border-radius:9px;background:var(--sunk)}
+.seg button{height:28px;padding:0 12px;border:0;border-radius:7px;background:none;color:var(--muted);font-weight:600}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--sh-1)}
+.bm{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px dashed var(--accent);border-radius:9px;color:var(--accent);font-weight:650;text-decoration:none;cursor:grab;background:var(--accent-soft)}
+
+/* tag input */
+.tagin{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:40px;padding:5px 8px;border:1px solid var(--rule);border-radius:9px;background:var(--raise);position:relative}
+.tagin:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tagin .tag{padding-right:4px;gap:2px}
+.tagin .tag button{display:inline-grid;place-items:center;width:18px;height:18px;border:0;border-radius:50%;background:none;color:var(--muted);padding:0}
+.tagin .tag button:hover{background:var(--sunk);color:var(--bad)}
+.tagin .tag svg{width:12px;height:12px}
+.tagin input{flex:1;min-width:120px;border:0;outline:0;background:none;color:var(--ink);font:inherit;padding:4px}
+.sugg{position:absolute;left:0;right:0;top:100%;margin-top:4px;z-index:5;max-height:200px;overflow:auto;background:var(--surface);border:1px solid var(--rule);border-radius:9px;box-shadow:var(--sh-2)}
+.sugg button{display:flex;width:100%;gap:8px;padding:7px 12px;border:0;background:none;text-align:left}
+.sugg button.on,.sugg button:hover{background:var(--sunk)}
+.sugg .n{margin-left:auto;color:var(--faint);font-size:12px}
+.dupwarn{display:flex;gap:10px;align-items:center;padding:9px 12px;margin:-4px 0 12px;border-radius:9px;background:var(--warn-soft);font-size:13px}
+.dupwarn .btn{margin-left:auto}
+
+/* conflicts */
+.cfield{margin:0 0 14px;padding:12px;border:1px solid var(--rule);border-radius:11px}
+.cfield h4{margin:0 0 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.copt{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--rule-2);border-radius:9px;margin-top:6px;cursor:pointer}
+.copt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.copt input{margin-top:4px;accent-color:var(--accent)}
+.copt .who{font-size:11.5px;font-weight:650;color:var(--muted);display:block}
+.copt .val{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--font-quote);font-size:15px}
+.copt .val.empty{font-style:italic;color:var(--faint);font-family:var(--font-ui);font-size:13px}
+
+/* toasts */
+.toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{display:flex;align-items:center;gap:14px;max-width:min(620px,92vw);padding:10px 12px 10px 16px;border-radius:12px;background:var(--ink);color:var(--paper);box-shadow:var(--sh-2);font-size:13.5px;pointer-events:auto;animation:rise .16s ease-out}
+.toast button{border:0;background:none;color:var(--accent-soft);font-weight:700;padding:4px 6px;border-radius:6px}
+:root[data-theme=dark] .toast button{color:var(--accent-ink)}
+.toast button:hover{background:rgba(255,255,255,.12)}
+@keyframes rise{from{transform:translateY(8px);opacity:0}}
+
+/* ---------- narrow screens ---------- */
+@media (max-width:1100px){ .app.reading{grid-template-columns:var(--rail) minmax(0,1fr)} .reader{position:fixed;right:0;top:0;bottom:0;width:min(var(--reader),100vw);z-index:30;box-shadow:var(--sh-2)} }
+@media (max-width:760px){
+  .app,.app.reading{grid-template-columns:1fr}
+  .rail{position:fixed;left:0;top:0;bottom:0;width:min(300px,86vw);z-index:40;transform:translateX(-102%);transition:transform .18s ease;box-shadow:var(--sh-2)}
+  .app.railopen .rail{transform:none}
+  .mtop{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--rule);background:var(--surface)}
+  .mtop .brand{margin:0;font-size:19px} .mtop .brand .mk{font-size:30px;top:9px}
+  .disc{padding:20px 16px 50px} .hero{padding:38px 22px 20px} .lib{padding:16px 14px 50px} .lhead{margin:-16px -14px 0;padding:14px 14px 10px}
+  .row2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="rail" id="rail" aria-label="Navigation">
+    <div class="rail-top">
+      <div class="brand"><span class="mk" aria-hidden="true">“</span>Quotes<small id="build-tag"></small></div>
+      <button class="btn primary capture" id="capture-btn" title="Capture a quote (N)"></button>
+    </div>
+    <nav class="nav">
+      <button data-view="discover" id="nav-discover"></button>
+      <button data-view="library" id="nav-library"></button>
+      <button data-view="trash" id="nav-trash"></button>
+    </nav>
+    <div class="facets">
+      <section class="facet" id="facet-tags"><h3>Tags<button type="button"></button></h3><div class="facet-list"></div></section>
+      <section class="facet" id="facet-authors"><h3>Authors<button type="button"></button></h3><div class="facet-list"></div></section>
+      <section class="facet" id="facet-sources"><h3>Sources<button type="button"></button></h3><div class="facet-list"></div></section>
+    </div>
+    <div class="rail-foot">
+      <button class="pill local" id="sync-pill" title="Drive sync"><i class="dot"></i><span>Loading…</span></button>
+      <button class="ib" id="settings-btn" title="Settings" aria-label="Settings"></button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="mtop"><button class="ib" id="menu-btn" aria-label="Menu"></button><div class="brand"><span class="mk" aria-hidden="true">“</span>Quotes</div><span style="flex:1"></span><button class="ib" id="capture-btn-2" aria-label="Capture"></button></div>
+    <div class="banners" id="banners"></div>
+    <section class="view" id="view" tabindex="-1"><div class="empty"><p>Opening your library…</p></div></section>
+  </main>
+  <aside class="reader" id="reader" hidden aria-label="Quote"></aside>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="modal-root"></div>
+<div id="elsewhere" class="scrim" hidden style="z-index:80"></div>
+<input type="file" id="file-in" accept=".json,application/json" hidden>
+
+<script>
+const BUILD = "1.0 \u00b7 558f50";
+const SYNC_SCRIPT = "/**\n * Quotes sync: keeps the shared copy of your Quotes library in your own Google Drive.\n *\n *   Data file : My Drive / 00_Apps / Quotes / quotes-sync.json\n *   Backups   : My Drive / 00_Apps / Quotes / backups /  (rolling, newest 40 kept; older ones go to Drive Trash)\n *\n * One-time setup\n *   1. Run \"setup\" once (Run button). Allow access when Google asks.\n *   2. Copy the sync key from the Execution log.\n *   3. Deploy > New deployment > Web app. Execute as: Me. Who has access: Anyone.\n *   4. Paste the Web app link (ends in /exec) and the key into Quotes > Drive sync.\n *\n * The script answers only requests that carry your sync key. The key lives in this\n * script's properties, never in the public Quotes page.\n *\n * Each quote is stored as its own record with a revision number. A device sends a changed\n * quote together with the revision it was based on. If the other PC changed that quote in\n * the meantime, the script refuses the write and returns the current copy, so the device\n * can merge field by field and ask you only when the same field was changed on both.\n */\nvar APP = 'quotes-sync', VERSION = 1;\nvar FOLDERS = ['00_Apps', 'Quotes'];\nvar DATA_FILE = 'quotes-sync.json';\nvar BACKUP_FOLDER = 'backups';\nvar KEEP_BACKUPS = 40;\nvar AUTO_BACKUP_HOURS = 20;\n\nfunction setup() {\n  var props = PropertiesService.getScriptProperties();\n  var key = props.getProperty('SYNC_KEY');\n  if (!key) {\n    key = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');\n    props.setProperty('SYNC_KEY', key);\n  }\n  var file = dataFile_();\n  backupFolder_();\n  Logger.log('Quotes sync is ready.');\n  Logger.log('Sync key: ' + key);\n  Logger.log('Data file: ' + file.getUrl());\n  Logger.log('Next: Deploy > New deployment > Web app (Execute as: Me, Who has access: Anyone). Paste the Web app link and this key into Quotes.');\n}\n\n/* Run this only if a setup link was shared by mistake. Every device then needs the new key. */\nfunction newKey() {\n  PropertiesService.getScriptProperties().deleteProperty('SYNC_KEY');\n  setup();\n}\n\nfunction doGet() {\n  return json_({ ok: true, app: APP, v: VERSION, note: 'Quotes sync is running. Use this link inside Quotes.' });\n}\n\nfunction doPost(e) {\n  var req;\n  try { req = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'bad_json' }); }\n  var key = PropertiesService.getScriptProperties().getProperty('SYNC_KEY');\n  if (!key || !req || typeof req.key !== 'string' || req.key !== key) return json_({ ok: false, error: 'bad_key' });\n  if (req.op === 'ping') return json_({ ok: true, app: APP, v: VERSION });\n\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(25000)) return json_({ ok: false, error: 'busy' });\n  try {\n    if (req.op === 'sync') return json_(sync_(req));\n    if (req.op === 'info') return json_(info_());\n    if (req.op === 'backups') return json_(listBackups_());\n    if (req.op === 'restore') return json_(restore_(req));\n    return json_({ ok: false, error: 'bad_op' });\n  } catch (err) {\n    if (err && err.code) return json_({ ok: false, error: err.code });\n    return json_({ ok: false, error: 'server', detail: String((err && err.message) || err).slice(0, 300) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/* ---------- sync ---------- */\nfunction sync_(req) {\n  var file = dataFile_();\n  var store = readStore_(file);\n  var recs = store.records;\n  var now = Date.now();\n  var device = String(req.device || '').slice(0, 60);\n  var changes = Array.isArray(req.changes) ? req.changes : [];\n  var accepted = [], conflicts = [], apply = [], done = {};\n\n  for (var i = 0; i < changes.length; i++) {\n    var ch = changes[i];\n    if (!ch || typeof ch.id !== 'string' || !ch.id || ch.id.length > 200 || done[ch.id]) continue;\n    done[ch.id] = true;\n    if (!ch.purge && (!ch.data || typeof ch.data !== 'object' || ch.data.id !== ch.id)) continue;\n    var cur = recs[ch.id];\n    var base = ch.baseRev === undefined ? null : ch.baseRev;\n    // A quote new to the Drive copy is accepted. Otherwise the device must have seen the latest revision.\n    if (cur && cur.rev !== base && !(cur.purged && ch.purge)) {\n      conflicts.push({ id: ch.id, rev: cur.rev, purged: !!cur.purged, device: cur.device || '', data: cur.purged ? null : cur.data });\n      continue;\n    }\n    if (!cur && ch.purge) { accepted.push({ id: ch.id, rev: null }); continue; }\n    apply.push(ch);\n  }\n\n  if (apply.length) {\n    var due = !store.lastBackupAt || now - store.lastBackupAt > AUTO_BACKUP_HOURS * 3600 * 1000;\n    if ((req.backup || due) && Object.keys(recs).length) {\n      backup_(file, typeof req.backup === 'string' ? req.backup : 'daily');\n      store.lastBackupAt = now;\n    }\n    for (var j = 0; j < apply.length; j++) {\n      var c = apply[j];\n      store.rev += 1;\n      recs[c.id] = { rev: store.rev, updated: now, device: device, purged: !!c.purge, data: c.purge ? null : c.data };\n      accepted.push({ id: c.id, rev: store.rev });\n    }\n    store.savedAt = new Date(now).toISOString();\n    store.savedBy = device;\n    file.setContent(JSON.stringify(store));\n  }\n\n  var have = req.have && typeof req.have === 'object' ? req.have : {};\n  var skip = {};\n  accepted.forEach(function (a) { skip[a.id] = true; });\n  conflicts.forEach(function (c) { skip[c.id] = true; });\n  var updates = [];\n  Object.keys(recs).forEach(function (id) {\n    var r = recs[id];\n    if (skip[id] || have[id] === r.rev) return;\n    if (r.purged && have[id] === undefined) return;   // nothing to remove on a device that never had it\n    updates.push({ id: id, rev: r.rev, purged: !!r.purged, device: r.device || '', data: r.purged ? null : r.data });\n  });\n  return {\n    ok: true, accepted: accepted, conflicts: conflicts, updates: updates,\n    serverRev: store.rev, count: liveCount_(recs), savedAt: store.savedAt || null, savedBy: store.savedBy || '',\n    lastBackupAt: store.lastBackupAt || null,\n  };\n}\n\nfunction info_() {\n  var file = dataFile_();\n  var store = readStore_(file);\n  return { ok: true, app: APP, v: VERSION, fileUrl: file.getUrl(), count: liveCount_(store.records), serverRev: store.rev,\n    savedAt: store.savedAt || null, savedBy: store.savedBy || '', lastBackupAt: store.lastBackupAt || null };\n}\n\nfunction liveCount_(recs) {\n  var n = 0;\n  Object.keys(recs).forEach(function (id) { var r = recs[id]; if (!r.purged && r.data && !r.data.deleted_at) n++; });\n  return n;\n}\n\n/* ---------- backups ---------- */\nfunction backup_(file, label) {\n  var folder = backupFolder_();\n  var stamp = new Date().toISOString().replace(/:/g, '-').replace(/\\.\\d+Z$/, 'Z');\n  var tag = label ? '_' + String(label).replace(/[^A-Za-z0-9-]/g, '').slice(0, 30) : '';\n  folder.createFile('quotes-sync_' + stamp + tag + '.json', file.getBlob().getDataAsString(), 'application/json');\n  prune_(folder);\n}\n\nfunction backupFiles_(folder) {\n  var files = [], it = folder.getFiles();\n  while (it.hasNext()) {\n    var f = it.next();\n    if (/^quotes-sync_.*\\.json$/.test(f.getName())) files.push(f);\n  }\n  files.sort(function (a, b) { return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });\n  return files;\n}\n\nfunction prune_(folder) {\n  backupFiles_(folder).slice(KEEP_BACKUPS).forEach(function (f) { f.setTrashed(true); });\n}\n\nfunction listBackups_() {\n  var files = backupFiles_(backupFolder_());\n  return { ok: true, backups: files.map(function (f) {\n    return { id: f.getId(), name: f.getName(), size: f.getSize(), created: f.getDateCreated().toISOString() };\n  }) };\n}\n\n/*\n  Restoring makes the Drive copy match a backup without destroying anything:\n  the current copy is backed up first, quotes in the backup come back as they were,\n  and quotes added since that backup move to Trash (restorable), not deleted.\n*/\nfunction restore_(req) {\n  var folder = backupFolder_();\n  var f;\n  try { f = DriveApp.getFileById(String(req.fileId || '')); } catch (err) { return { ok: false, error: 'not_found' }; }\n  var inside = false, parents = f.getParents();\n  while (parents.hasNext()) { if (parents.next().getId() === folder.getId()) inside = true; }\n  if (!inside || !/^quotes-sync_.*\\.json$/.test(f.getName())) return { ok: false, error: 'not_a_backup' };\n  var snap;\n  try { snap = JSON.parse(f.getBlob().getDataAsString()); } catch (err) { return { ok: false, error: 'corrupt_backup' }; }\n  var srecs = (snap && snap.records) || {};\n\n  var file = dataFile_();\n  var store;\n  try { store = readStore_(file); } catch (err) {\n    // The live file is unreadable: start clean from the backup. Revisions jump past anything\n    // a device could hold, so every PC takes the restored copy.\n    store = emptyStore_();\n    store.rev = Math.max(Number(snap && snap.rev) || 0, Date.now());\n  }\n  backup_(file, 'before-restore');\n  var now = Date.now(), iso = new Date(now).toISOString(), restored = 0, trashed = 0;\n  Object.keys(srecs).forEach(function (id) {\n    var b = srecs[id];\n    if (!b || b.purged || !b.data) return;\n    var cur = store.records[id];\n    if (cur && !cur.purged && JSON.stringify(cur.data) === JSON.stringify(b.data)) return;\n    store.rev += 1;\n    store.records[id] = { rev: store.rev, updated: now, device: 'restore', purged: false, data: b.data };\n    restored++;\n  });\n  Object.keys(store.records).forEach(function (id) {\n    var cur = store.records[id];\n    if (cur.purged || !cur.data || cur.data.deleted_at) return;\n    var b = srecs[id];\n    if (b && !b.purged && b.data) return;\n    var d = JSON.parse(JSON.stringify(cur.data));\n    d.deleted_at = iso;\n    store.rev += 1;\n    store.records[id] = { rev: store.rev, updated: now, device: 'restore', purged: false, data: d };\n    trashed++;\n  });\n  store.lastBackupAt = now;\n  store.savedAt = iso;\n  store.savedBy = 'restore';\n  file.setContent(JSON.stringify(store));\n  return { ok: true, restored: restored, trashed: trashed, serverRev: store.rev, from: f.getName() };\n}\n\n/* ---------- storage ---------- */\nfunction emptyStore_() { return { app: APP, schema: 1, rev: 0, records: {} }; }\n\nfunction readStore_(file) {\n  var raw = file.getBlob().getDataAsString();\n  if (!raw || !raw.trim()) return emptyStore_();\n  var s;\n  // Never overwrite a file that can't be read: that would replace your library with nothing.\n  try { s = JSON.parse(raw); } catch (err) { throw { code: 'corrupt_store' }; }\n  if (!s || typeof s !== 'object' || (s.records && typeof s.records !== 'object')) throw { code: 'corrupt_store' };\n  s.records = s.records || {};\n  s.rev = s.rev || 0;\n  s.app = APP; s.schema = 1;\n  return s;\n}\n\nfunction quotesFolder_() {\n  var folder = DriveApp.getRootFolder();\n  FOLDERS.forEach(function (name) {\n    var it = folder.getFoldersByName(name);\n    folder = it.hasNext() ? it.next() : folder.createFolder(name);\n  });\n  return folder;\n}\n\nfunction dataFile_() {\n  var folder = quotesFolder_();\n  var it = folder.getFilesByName(DATA_FILE);\n  if (it.hasNext()) return it.next();\n  return folder.createFile(DATA_FILE, JSON.stringify(emptyStore_()), 'application/json');\n}\n\nfunction backupFolder_() {\n  var parent = quotesFolder_();\n  var it = parent.getFoldersByName(BACKUP_FOLDER);\n  return it.hasNext() ? it.next() : parent.createFolder(BACKUP_FOLDER);\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n";
+/* ============ Quotes logic: pure functions, no DOM (unit-tested in Node) ============ */
+(function (root) {
+  'use strict';
+  const QL = {};
+
+  /* ---------- small helpers ---------- */
+  const clone = v => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
+  function deepEq(a, b) {
+    if (a === b) return true;
+    if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    if (Array.isArray(a)) { if (a.length !== b.length) return false; for (let i = 0; i < a.length; i++) if (!deepEq(a[i], b[i])) return false; return true; }
+    const ka = Object.keys(a).filter(k => a[k] !== undefined), kb = Object.keys(b).filter(k => b[k] !== undefined);
+    if (ka.length !== kb.length) return false;
+    for (const k of ka) if (!deepEq(a[k], b[k])) return false;
+    return true;
+  }
+  const pad = n => String(n).padStart(2, '0');
+  function isoLocal(d) {
+    d = d || new Date();
+    const off = -d.getTimezoneOffset(), s = off >= 0 ? '+' : '-', a = Math.abs(off);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${s}${pad(Math.floor(a / 60))}:${pad(a % 60)}`;
+  }
+  function hex(n) {
+    const c = root.crypto || (typeof require === 'function' ? require('crypto').webcrypto : null);
+    const b = new Uint8Array(n); c.getRandomValues(b);
+    return [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+  const newId = () => 'quote-' + hex(16);
+  const ts = s => { const t = Date.parse(s || ''); return isNaN(t) ? 0 : t; };
+  const sortKey = q => ts(q.captured_at) || ts(q.created_at);
+  const isLive = q => q && !q.deleted_at;
+  /* Exact-duplicate test used for imports: case-folded, whitespace-collapsed text. */
+  const normText = s => String(s || '').normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
+  Object.assign(QL, { clone, deepEq, isoLocal, newId, ts, sortKey, isLive, normText });
+
+  /* ---------- library queries (Flow behaviour) ---------- */
+  // Case-insensitive substring across text, author, source, notes and tags; newest first.
+  function matches(q, needle) {
+    if (!needle) return true;
+    const n = needle.toLowerCase();
+    return [q.text, q.author, q.source, q.note].some(v => String(v || '').toLowerCase().includes(n)) ||
+      (Array.isArray(q.tags) && q.tags.some(t => String(t).toLowerCase().includes(n)));
+  }
+  function query(list, f) {
+    f = f || {};
+    const out = list.filter(q => isLive(q) && matches(q, (f.q || '').trim()) &&
+      (!f.tag || (Array.isArray(q.tags) && q.tags.includes(f.tag))) &&
+      (f.author == null || (q.author || '') === f.author) &&
+      (f.source == null || (q.source || '') === f.source));
+    out.sort((a, b) => (sortKey(b) - sortKey(a)) || (ts(b.created_at) - ts(a.created_at)) || (a.id < b.id ? -1 : 1));
+    if (f.oldest) out.reverse();
+    return out;
+  }
+  function counts(list, pick) {
+    const m = new Map();
+    for (const q of list) { if (!isLive(q)) continue; for (const v of pick(q)) m.set(v, (m.get(v) || 0) + 1); }
+    return [...m.entries()].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])));
+  }
+  const tagCounts = list => counts(list, q => Array.isArray(q.tags) ? [...new Set(q.tags)] : []);
+  const authorCounts = list => counts(list, q => [q.author || '']);
+  const sourceCounts = list => counts(list, q => [q.source || '']);
+  Object.assign(QL, { matches, query, tagCounts, authorCounts, sourceCounts });
+
+  /* ---------- import ---------- */
+  const FLOW_FIELDS = ['id', 'text', 'author', 'source', 'note', 'tags', 'captured_at', 'created_at', 'updated_at', 'legacy_ids', 'legacy_source'];
+  function detect(doc) {
+    if (doc && Array.isArray(doc.quotes)) return 'flow';
+    if (doc && Array.isArray(doc.ideas)) return 'ikes';
+    if (Array.isArray(doc) && doc.length && doc.every(x => x && typeof x === 'object' && typeof x.id === 'string' && /^quote-/.test(x.id))) return 'flow-array';
+    return null;
+  }
+  function ikesDate(v) {
+    if (v == null || v === '') return null;
+    if (typeof v === 'number') {
+      const ms = v > 1e12 ? v : v > 1e9 ? v * 1000 : (v + 978307200) * 1000;   // ms, unix seconds, or Apple reference seconds
+      return new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
+    }
+    const t = Date.parse(v); return isNaN(t) ? null : String(v);
+  }
+  function ikesTags(v) {
+    const arr = Array.isArray(v) ? v : v ? [v] : [];
+    return [...new Set(arr.map(t => typeof t === 'string' ? t : t && (t.name || t.title || t.tag)).filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()))];
+  }
+  // Ikes idea -> quote fields. Attribution comes only from the idea itself; "You" means your own note, so no author.
+  function fromIkes(idea) {
+    const legacy = idea.id || idea.uuid || idea.identifier || idea.ideaID || null;
+    const text = [idea.text, idea.content, idea.body, idea.title].find(v => typeof v === 'string' && v.trim() !== '');
+    const src = idea.source && typeof idea.source === 'object' ? idea.source : idea.person && typeof idea.person === 'object' ? idea.person : null;
+    let author = typeof idea.author === 'string' ? idea.author : '';
+    if (!author && src && src.name && (src.type === 'person' || !src.type) && src.name !== 'You') author = String(src.name);
+    const source = typeof idea.source === 'string' ? idea.source : (src && src.type && src.type !== 'person' && src.name ? String(src.name) : '');
+    const out = {
+      legacy: legacy ? String(legacy) : null,
+      text: text === undefined ? null : text,
+      author, source,
+      note: typeof idea.note === 'string' ? idea.note : typeof idea.notes === 'string' ? idea.notes : '',
+      tags: ikesTags(idea.tags || idea.tag),
+      captured_at: ikesDate(idea.createdAt ?? idea.created_at ?? idea.created ?? idea.creationDate ?? idea.date),
+    };
+    if (src) out.legacy_source = Object.assign({ app: 'ikes' }, clone(src));
+    return out;
+  }
+  function parseImport(doc) {
+    const kind = detect(doc);
+    if (kind === 'flow' || kind === 'flow-array') {
+      const items = kind === 'flow' ? doc.quotes : doc;
+      return { kind: doc && doc.app === 'quotes' ? 'quotes' : 'flow', schema: doc && doc.schema, items: items.map(clone) };
+    }
+    if (kind === 'ikes') return { kind: 'ikes', items: doc.ideas.map(i => (i && typeof i === 'object') ? fromIkes(i) : { text: null }) };
+    return { kind: null, items: [] };
+  }
+  /*
+    Plan an import without changing anything (the preview / dry run).
+    Native files (Flow snapshot, Quotes export): matched by ID. Every field is kept as is.
+    Ikes: matched by an earlier-imported legacy ID first (skipped: repeatable), then by exact
+    normalised text (merged: legacy ID and missing tags added, logged). Similar-but-different
+    text is never merged.
+  */
+  function planImport(existing, parsed, opts) {
+    opts = opts || {};
+    const now = opts.now || isoLocal();
+    const plan = { kind: parsed.kind, total: parsed.items.length, adds: [], updates: [], merges: [], same: 0, localNewer: 0, legacyMatch: 0, invalid: 0, dupInFile: 0, textTwins: 0 };
+    const live = [...existing.values()];
+    if (parsed.kind === 'flow' || parsed.kind === 'quotes') {
+      const seen = new Set();
+      const byText = new Map(live.map(q => [normText(q.text), q]));
+      for (const it of parsed.items) {
+        if (!it || typeof it.id !== 'string' || !it.id || typeof it.text !== 'string') { plan.invalid++; continue; }
+        if (seen.has(it.id)) { plan.dupInFile++; continue; }
+        seen.add(it.id);
+        const cur = existing.get(it.id);
+        if (!cur) {
+          if (byText.has(normText(it.text)) && byText.get(normText(it.text)).id !== it.id) plan.textTwins++;
+          plan.adds.push(it); continue;
+        }
+        if (deepEq(cur, it)) { plan.same++; continue; }
+        if (ts(it.updated_at) > ts(cur.updated_at)) plan.updates.push(it); else plan.localNewer++;
+      }
+      return plan;
+    }
+    if (parsed.kind === 'ikes') {
+      const byLegacy = new Map(), byText = new Map();
+      for (const q of live) {
+        for (const l of q.legacy_ids || []) byLegacy.set(String(l).toUpperCase(), q);
+        const k = normText(q.text); if (k && !byText.has(k)) byText.set(k, q);
+      }
+      const pendingMerge = new Map();   // existing id -> merge entry
+      const newByText = new Map();      // normalised text -> new record in this file
+      for (const it of parsed.items) {
+        if (!it || typeof it.text !== 'string' || !it.text.trim()) { plan.invalid++; continue; }
+        const L = it.legacy ? it.legacy.toUpperCase() : null;
+        if (L && byLegacy.has(L)) { plan.legacyMatch++; continue; }
+        const k = normText(it.text);
+        const hit = byText.get(k);
+        if (hit) {
+          const m = pendingMerge.get(hit.id) || { id: hit.id, matchedBy: 'text', addLegacy: [], addTags: [], preview: hit.text.slice(0, 80) };
+          if (L && !(hit.legacy_ids || []).some(x => String(x).toUpperCase() === L) && !m.addLegacy.includes(it.legacy)) m.addLegacy.push(it.legacy);
+          for (const t of it.tags) if (!(hit.tags || []).includes(t) && !m.addTags.includes(t)) m.addTags.push(t);
+          if (L) byLegacy.set(L, hit);
+          if (m.addLegacy.length || m.addTags.length) pendingMerge.set(hit.id, m); else plan.legacyMatch++;
+          continue;
+        }
+        const twin = newByText.get(k);
+        if (twin) {   // same text twice in the file: one quote, both legacy IDs
+          plan.dupInFile++;
+          if (it.legacy && !twin.legacy_ids.includes(it.legacy)) twin.legacy_ids.push(it.legacy);
+          for (const t of it.tags) if (!twin.tags.includes(t)) twin.tags.push(t);
+          if (L) byLegacy.set(L, twin);
+          continue;
+        }
+        const rec = { id: newId(), text: it.text, author: it.author || '', source: it.source || '', note: it.note || '', tags: it.tags.slice(),
+          captured_at: it.captured_at || now, created_at: now, updated_at: now, legacy_ids: it.legacy ? [it.legacy] : [] };
+        if (it.legacy_source) rec.legacy_source = it.legacy_source;
+        newByText.set(k, rec);
+        if (L) byLegacy.set(L, rec);
+        plan.adds.push(rec);
+      }
+      plan.merges = [...pendingMerge.values()];
+      return plan;
+    }
+    plan.unknown = true;
+    return plan;
+  }
+  /* Apply a plan to a Map copy. Returns the changed records (before/after) and an audit entry. */
+  function applyPlan(existing, plan, meta) {
+    meta = meta || {};
+    const now = meta.now || isoLocal();
+    const changes = [];
+    for (const r of plan.adds) changes.push({ id: r.id, before: existing.get(r.id) || null, after: clone(r) });
+    for (const r of plan.updates) changes.push({ id: r.id, before: existing.get(r.id), after: clone(r) });
+    const merges = [];
+    for (const m of plan.merges) {
+      const cur = existing.get(m.id); if (!cur) continue;
+      const after = clone(cur);
+      if (m.addLegacy.length) after.legacy_ids = [...(after.legacy_ids || []), ...m.addLegacy];
+      if (m.addTags.length) after.tags = [...(after.tags || []), ...m.addTags];
+      after.updated_at = now;
+      changes.push({ id: m.id, before: cur, after });
+      merges.push({ id: m.id, matched_by: m.matchedBy, added_legacy_ids: m.addLegacy, added_tags: m.addTags });
+    }
+    const audit = { at: now, file: meta.file || '', kind: plan.kind, total: plan.total, added: plan.adds.length, updated: plan.updates.length,
+      merged: merges.length, unchanged: plan.same, kept_local_newer: plan.localNewer, already_imported: plan.legacyMatch,
+      duplicates_in_file: plan.dupInFile, skipped_invalid: plan.invalid, merges };
+    return { changes, audit };
+  }
+  /* Every ID and every field of a snapshot compared with what is stored. */
+  function verify(snapshotItems, getStored) {
+    const rep = { total: 0, present: 0, missing: [], differing: [] };
+    for (const s of snapshotItems) {
+      if (!s || typeof s.id !== 'string') continue;
+      rep.total++;
+      const cur = getStored(s.id);
+      if (!cur) { rep.missing.push(s.id); continue; }
+      rep.present++;
+      const fields = [...new Set([...Object.keys(s), ...Object.keys(cur)])].filter(k => !deepEq(s[k], cur[k]));
+      if (fields.length) rep.differing.push({ id: s.id, fields });
+    }
+    rep.ok = rep.present === rep.total && !rep.differing.length;
+    return rep;
+  }
+  function exportDoc(list, meta) {
+    const quotes = list.slice().sort((a, b) => (ts(a.created_at) - ts(b.created_at)) || (sortKey(a) - sortKey(b)) || (a.id < b.id ? -1 : 1));
+    return Object.assign({ schema: 1, app: 'quotes', exported_at: isoLocal(), count: quotes.length }, meta || {}, { quotes: quotes.map(clone) });
+  }
+  Object.assign(QL, { FLOW_FIELDS, detect, fromIkes, parseImport, planImport, applyPlan, verify, exportDoc });
+
+  /* ---------- three-way merge for sync ---------- */
+  const SET_FIELDS = new Set(['tags', 'legacy_ids']);
+  function mergeSet(b, m, t) {
+    b = Array.isArray(b) ? b : []; m = Array.isArray(m) ? m : []; t = Array.isArray(t) ? t : [];
+    const removed = new Set([...b.filter(x => !m.includes(x)), ...b.filter(x => !t.includes(x))]);
+    const out = m.filter(x => !removed.has(x));
+    for (const x of t) if (!out.includes(x) && !removed.has(x)) out.push(x);
+    return out;
+  }
+  // Field-by-field: a field changed on one side only is taken from that side; changed on both
+  // to different values is a clash (the merged copy keeps this PC's value until you choose).
+  function merge3(base, mine, theirs) {
+    base = base || {};
+    const keys = [...new Set([...Object.keys(mine), ...Object.keys(theirs), ...Object.keys(base)])];
+    const out = {}, clashes = [];
+    for (const k of keys) {
+      if (k === 'updated_at') continue;
+      const b = base[k], m = mine[k], t = theirs[k];
+      if (deepEq(m, t)) { if (m !== undefined) out[k] = clone(m); continue; }
+      if (SET_FIELDS.has(k) && (m === undefined || Array.isArray(m)) && (t === undefined || Array.isArray(t))) { out[k] = mergeSet(b, m, t); continue; }
+      if (deepEq(m, b)) { if (t !== undefined) out[k] = clone(t); continue; }
+      if (deepEq(t, b)) { if (m !== undefined) out[k] = clone(m); continue; }
+      clashes.push(k);
+      if (m !== undefined) out[k] = clone(m);
+    }
+    const mu = mine.updated_at, tu = theirs.updated_at;
+    const upd = ts(mu) >= ts(tu) ? mu : tu;
+    if (upd !== undefined) out.updated_at = upd;
+    const ordered = {};
+    for (const k of [...Object.keys(theirs), ...Object.keys(mine)]) if (k in out && !(k in ordered)) ordered[k] = out[k];
+    for (const k of Object.keys(out)) if (!(k in ordered)) ordered[k] = out[k];
+    return { merged: ordered, clashes };
+  }
+  Object.assign(QL, { mergeSet, merge3 });
+
+  /* ---------- text relevance (local, offline) ---------- */
+  const STOP = new Set(('a an and are as at be been but by can could did do does doing for from had has have he her here him his how i if in into is it its just me more most my no not of on or our out over own same she should so some such than that the their them then there these they this those through to too under until up very was we were what when where which while who whom why will with would you your yours yourself also only any all each few other both again further once let us one get got make made way going well even really thing things lot').split(' '));
+  const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+  const TOKEN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+|(?:(?![\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}])[\p{L}\p{N}'’])+/gu;
+  function stem(w) {
+    if (w.length > 5 && w.endsWith('ies')) return w.slice(0, -3) + 'y';
+    if (w.length > 6 && w.endsWith('ing')) return w.slice(0, -3);
+    if (w.length > 5 && w.endsWith('ed')) return w.slice(0, -2);
+    if (w.length > 4 && w.endsWith('es') && /(ss|sh|ch|x)es$/.test(w)) return w.slice(0, -2);
+    if (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) return w.slice(0, -1);
+    return w;
+  }
+  function tokenize(s) {
+    const out = [], surface = {};
+    for (const m of String(s || '').normalize('NFKC').toLowerCase().matchAll(TOKEN)) {
+      const w = m[0];
+      if (CJK.test(w[0])) {
+        const ch = [...w];
+        if (ch.length === 1) { out.push(ch[0]); surface[ch[0]] = ch[0]; }
+        for (let i = 0; i < ch.length - 1; i++) { const t = ch[i] + ch[i + 1]; out.push(t); surface[t] = t; }
+      } else {
+        const t0 = w.replace(/['’]s$/, '').replace(/['’]/g, '');
+        if (t0.length < 3 || STOP.has(t0) || /^\d+$/.test(t0)) continue;
+        const t = stem(t0); out.push(t); if (!surface[t]) surface[t] = t0;
+      }
+    }
+    return { tokens: out, surface };
+  }
+  function buildIndex(list) {
+    const docs = new Map(), df = new Map(), tagDf = new Map();
+    const live = list.filter(isLive);
+    for (const q of live) {
+      const { tokens, surface } = tokenize(q.text + ' ' + (q.note || ''));
+      const tf = new Map(); for (const t of tokens) tf.set(t, (tf.get(t) || 0) + 1);
+      for (const t of tf.keys()) df.set(t, (df.get(t) || 0) + 1);
+      for (const t of new Set(q.tags || [])) tagDf.set(t, (tagDf.get(t) || 0) + 1);
+      docs.set(q.id, { q, tf, surface, set: new Set(tokens), norm: normText(q.text) });
+    }
+    const N = live.length;
+    const idf = t => Math.log((N + 1) / ((df.get(t) || 0) + 1)) + 1;
+    // 0..1: a tag on half the library is weak evidence, a tag on three quotes is strong
+    const tagIdf = t => N < 3 ? 1 : Math.max(0.05, Math.log(N / Math.max(1, tagDf.get(t) || 0)) / Math.log(N));
+    for (const d of docs.values()) {
+      const v = new Map(); let n2 = 0;
+      for (const [t, c] of d.tf) { const w = (1 + Math.log(c)) * idf(t); v.set(t, w); n2 += w * w; }
+      d.vec = v; d.len = Math.sqrt(n2) || 1;
+    }
+    return { docs, idf, tagIdf, N };
+  }
+  function nearDup(a, b) {
+    if (a.norm === b.norm) return true;
+    const short = a.norm.length < b.norm.length ? a.norm : b.norm, long = short === a.norm ? b.norm : a.norm;
+    if (short.length > 12 && long.includes(short) && short.length / long.length >= 0.8) return true;
+    if (a.set.size >= 3 && b.set.size >= 3) {
+      let inter = 0; for (const t of a.set) if (b.set.has(t)) inter++;
+      if (inter / (a.set.size + b.set.size - inter) >= 0.85) return true;
+    }
+    return false;
+  }
+  /* 3-5 related saved entries: tag overlap (rare tags count more) + local text similarity. */
+  function related(index, id, opts) {
+    opts = opts || {};
+    const max = opts.max || 5, min = opts.min || 3;
+    const me = index.docs.get(id); if (!me) return { items: [], hiddenDups: [] };
+    const myTags = new Set(me.q.tags || []);
+    const scored = [], hiddenDups = [];
+    for (const d of index.docs.values()) {
+      if (d === me) continue;
+      if (nearDup(me, d)) { hiddenDups.push(d.q.id); continue; }
+      let dot = 0; const shared = [];
+      for (const [t, w] of me.vec) { const w2 = d.vec.get(t); if (w2) { dot += w * w2; shared.push([t, w * w2]); } }
+      const cos = dot / (me.len * d.len);
+      const tagsB = new Set(d.q.tags || []);
+      let inter = 0, uni = 0; const sharedTags = [];
+      for (const t of new Set([...myTags, ...tagsB])) { const w = index.tagIdf(t); uni += w; if (myTags.has(t) && tagsB.has(t)) { inter += w; sharedTags.push([t, w]); } }
+      const tagSim = uni ? Math.min(1, inter) * (inter / uni) : 0;
+      let score = 0.6 * cos + 0.4 * tagSim;
+      const a1 = (me.q.author || '').trim(), a2 = (d.q.author || '').trim(), s1 = (me.q.source || '').trim(), s2 = (d.q.source || '').trim();
+      const sameAttr = (a1 && a1 === a2) || (s1 && s1 === s2);
+      if (sameAttr) score *= 0.85;                 // prefer the same theme from a different source
+      else if ((a1 || s1) && (a2 || s2) && tagSim > 0) score *= 1.08;
+      if (score <= 0.02) continue;
+      const reasons = [];
+      sharedTags.sort((x, y) => y[1] - x[1]);
+      if (sharedTags.length) reasons.push((sharedTags.length > 1 ? 'Shared tags: ' : 'Shared tag: ') + sharedTags.slice(0, 2).map(x => x[0]).join(', '));
+      shared.sort((x, y) => y[1] - x[1]);
+      const words = shared.filter(x => x[1] > 0.5).slice(0, 3).map(x => me.surface[x[0]] || x[0]);
+      if (words.length && cos > 0.08) reasons.push('Shared words: ' + words.join(', '));
+      if (sameAttr) reasons.push('Same ' + (a1 && a1 === a2 ? 'author' : 'source'));
+      if (!reasons.length) reasons.push('Similar wording');
+      scored.push({ id: d.q.id, score, cos, tagSim, reasons });
+    }
+    scored.sort((a, b) => b.score - a.score || (a.id < b.id ? -1 : 1));
+    const picked = [];
+    for (const s of scored) {
+      if (picked.length >= max) break;
+      if (picked.length >= min && s.score < 0.12) break;
+      const d = index.docs.get(s.id);
+      if (picked.some(p => nearDup(index.docs.get(p.id), d))) continue;   // no two near-duplicates in the list
+      picked.push(s);
+    }
+    return { items: picked, hiddenDups };
+  }
+  Object.assign(QL, { tokenize, buildIndex, related, nearDup });
+
+  /* ---------- Discover: daily selection ---------- */
+  function seeded(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }
+    return function () {
+      h = Math.imul(h ^ (h >>> 16), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16;
+      return (h >>> 0) / 4294967296;
+    };
+  }
+  /*
+    Least-seen first, so nothing repeats until everything eligible has been shown once.
+    Within the same seen-level, each pick is pushed away from tags and authors already picked.
+  */
+  function pickDaily(list, hist, seed, n, exclude) {
+    hist = hist || {}; exclude = exclude || new Set();
+    const rnd = seeded(seed);
+    const cand = list.filter(q => isLive(q) && !exclude.has(q.id)).map(q => ({ q, n: (hist[q.id] && hist[q.id].n) || 0, last: (hist[q.id] && hist[q.id].last) || 0, r: rnd() }));
+    const picked = [], tagUse = new Map(), authUse = new Map();
+    while (picked.length < n && cand.length) {
+      const minN = Math.min(...cand.map(c => c.n));
+      let best = -1, bestCost = Infinity;
+      for (let i = 0; i < cand.length; i++) {
+        const c = cand[i];
+        if (c.n !== minN) continue;
+        let cost = c.r * 5 + (c.last ? Math.max(0, 3 - (Date.now() - c.last) / 864e5) : 0);
+        for (const t of new Set(c.q.tags || [])) cost += (tagUse.get(t) || 0) * 6;
+        if (!(c.q.tags || []).length) cost += (tagUse.get('') || 0) * 6;
+        const a = (c.q.author || '').trim();
+        if (a) cost += (authUse.get(a) || 0) * 8;
+        if (cost < bestCost) { bestCost = cost; best = i; }
+      }
+      const c = cand.splice(best, 1)[0];
+      picked.push(c.q.id);
+      for (const t of new Set(c.q.tags || [])) tagUse.set(t, (tagUse.get(t) || 0) + 1);
+      if (!(c.q.tags || []).length) tagUse.set('', (tagUse.get('') || 0) + 1);
+      const a = (c.q.author || '').trim(); if (a) authUse.set(a, (authUse.get(a) || 0) + 1);
+    }
+    return picked;
+  }
+  /* Shuffle: random, but leaning towards quotes seen less often. */
+  function pickShuffle(list, hist, avoid, rnd) {
+    rnd = rnd || Math.random;
+    const pool = list.filter(q => isLive(q) && !(avoid && avoid.has(q.id)));
+    if (!pool.length) return null;
+    const w = pool.map(q => 1 / (1 + ((hist && hist[q.id] && hist[q.id].n) || 0)));
+    let x = rnd() * w.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < pool.length; i++) { x -= w[i]; if (x <= 0) return pool[i].id; }
+    return pool[pool.length - 1].id;
+  }
+  Object.assign(QL, { seeded, pickDaily, pickShuffle });
+
+  root.QL = QL;
+  if (typeof module === 'object' && module.exports) module.exports = QL;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+'use strict';
+/* ============ Core: DOM helpers, icons, storage, state, record operations ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+/* Every piece of user text goes into the page as a text node, never as HTML. */
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k === 'icon') el.insertAdjacentHTML('afterbegin', ICON[v] || '');
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else if (k === 'dataset') Object.assign(el.dataset, v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const kid of kids.flat(Infinity)) {
+    if (kid == null || kid === false) continue;
+    el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+const svg = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}<\/svg>`;
+const ICON = {
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  search: svg('<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>'),
+  sparkle: svg('<path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 16v4M16.5 18h4"/>'),
+  books: svg('<path d="M5 4.5h4v15H5zM10 4.5h4v15h-4z"/><path d="m15.2 5.4 3.8-1 3.1 14.5-3.8.9z"/>'),
+  trash: svg('<path d="M4.5 7h15M9.5 7V4.8h5V7M6.5 7l.9 12.2h9.2L17.5 7M10 11v5M14 11v5"/>'),
+  next: svg('<path d="M5 12h13M13 6l6 6-6 6"/>'),
+  prev: svg('<path d="M19 12H6M11 6l-6 6 6 6"/>'),
+  shuffle: svg('<path d="M4 7h3.5c4.5 0 5.5 10 10 10H20M4 17h3.5c1.6 0 2.7-1.3 3.6-3M14 9.5c.9-1.5 2-2.5 3.5-2.5H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5"/>'),
+  copy: svg('<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/>'),
+  edit: svg('<path d="M4.5 19.5h4l10-10a2.1 2.1 0 0 0-4-4l-10 10z"/><path d="m13.5 6.5 4 4"/>'),
+  open: svg('<path d="M13.5 4.5h6v6M19.5 4.5l-8 8M17 13.5v5a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h5"/>'),
+  close: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
+  gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+  restore: svg('<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"/><path d="M4.5 4.5V9H9"/>'),
+  dice: svg('<rect x="4.5" y="4.5" width="15" height="15" rx="3"/><circle cx="9" cy="9" r=".9" fill="currentColor"/><circle cx="15" cy="15" r=".9" fill="currentColor"/><circle cx="15" cy="9" r=".9" fill="currentColor"/><circle cx="9" cy="15" r=".9" fill="currentColor"/>'),
+  menu: svg('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+  download: svg('<path d="M12 4.5v11M7 11l5 5 5-5M5 19.5h14"/>'),
+  upload: svg('<path d="M12 16V5M7 9.5l5-5 5 5M5 19.5h14"/>'),
+  sync: svg('<path d="M19.5 9A7.5 7.5 0 0 0 6 6.6L4.5 8M4.5 15A7.5 7.5 0 0 0 18 17.4l1.5-1.4"/><path d="M4.5 4v4h4M19.5 20v-4h-4"/>'),
+  link: svg('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
+  check: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
+  alert: svg('<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17.2v.1"/>'),
+  history: svg('<circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.5l3 2"/>'),
+};
+const fmtDate = s => { const t = QL.ts(s); return t ? new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; };
+const fmtDateTime = s => { const t = typeof s === 'number' ? s : QL.ts(s); return t ? new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''; };
+const plural = (n, w, pl) => `${n} ${n === 1 ? w : (pl || w + 's')}`;
+function ago(ms) {
+  if (!ms) return 'never';
+  const s = Math.round((Date.now() - ms) / 1000);
+  if (s < 45) return 'just now';
+  const m = Math.round(s / 60); if (m < 60) return m + ' min ago';
+  const hr = Math.round(m / 60); if (hr < 24) return hr + ' h ago';
+  return new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/* ---------- storage: IndexedDB (one atomic transaction per save), localStorage if IndexedDB is unavailable ---------- */
+const DB_NAME = 'quotes-app', DB_STORE = 'kv';
+const Store = {
+  db: null, mode: 'idb',
+  async open() {
+    try {
+      if (!('indexedDB' in window)) throw new Error('no idb');
+      this.db = await new Promise((res, rej) => {
+        const r = indexedDB.open(DB_NAME, 1);
+        r.onupgradeneeded = () => r.result.createObjectStore(DB_STORE);
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+        r.onblocked = () => rej(new Error('blocked'));
+      });
+    } catch (e) { this.mode = 'ls'; }
+  },
+  _tx(mode, fn) {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction(DB_STORE, mode), st = t.objectStore(DB_STORE);
+      let out; const r = fn(st);
+      if (r) r.onsuccess = () => { out = r.result; };
+      t.oncomplete = () => res(out);
+      t.onerror = t.onabort = () => rej(t.error || new Error('transaction failed'));
+    });
+  },
+  async get(k) {
+    if (this.mode === 'ls') { const s = localStorage.getItem('quotes.kv.' + k); return s ? JSON.parse(s) : undefined; }
+    return this._tx('readonly', st => st.get(k));
+  },
+  async put(obj) {   // { key: value, ... } written together or not at all
+    if (this.mode === 'ls') { for (const [k, v] of Object.entries(obj)) localStorage.setItem('quotes.kv.' + k, JSON.stringify(v)); return; }
+    return this._tx('readwrite', st => { let last; for (const [k, v] of Object.entries(obj)) last = st.put(v, k); return last; });
+  },
+  async del(k) {
+    if (this.mode === 'ls') { localStorage.removeItem('quotes.kv.' + k); return; }
+    return this._tx('readwrite', st => st.delete(k));
+  },
+  async keys() {
+    if (this.mode === 'ls') return Object.keys(localStorage).filter(k => k.startsWith('quotes.kv.')).map(k => k.slice(10));
+    return this._tx('readonly', st => st.getAllKeys());
+  },
+};
+const LS_UI = 'quotes.ui.v1';   // this PC only: display settings, Discover history
+
+/* ---------- state ---------- */
+const App = {
+  quotes: new Map(),
+  view: 'discover', filter: { q: '', tag: null, author: null, source: null, oldest: false },
+  readerId: null, libLimit: 200, sel: null,
+  sync: { url: '', key: '', device: '', base: {}, baseData: {}, dirty: {}, purge: {}, conflicts: {}, lastSync: 0, server: null },
+  audit: [], log: [],
+  ui: { theme: 'auto', dailyN: 5, excludeTags: [], hist: {}, recent: [], daily: null, facetAll: {} },
+  saveOK: true, booted: false, readFailed: false, owner: false, index: null, undo: null, tab: Math.random().toString(36).slice(2),
+};
+const live = () => [...App.quotes.values()].filter(QL.isLive);
+const trashed = () => [...App.quotes.values()].filter(q => q.deleted_at).sort((a, b) => QL.ts(b.deleted_at) - QL.ts(a.deleted_at));
+function getIndex() { if (!App.index) App.index = QL.buildIndex([...App.quotes.values()]); return App.index; }
+
+function logEvent(kind, msg) {
+  App.log.unshift({ at: Date.now(), kind, msg });
+  if (App.log.length > 300) App.log.length = 300;
+}
+
+function loadUI() {
+  try { Object.assign(App.ui, JSON.parse(localStorage.getItem(LS_UI) || '{}')); } catch (e) { }
+  if (!Array.isArray(App.ui.excludeTags)) App.ui.excludeTags = [];
+}
+function saveUI() { try { localStorage.setItem(LS_UI, JSON.stringify(App.ui)); } catch (e) { } }
+
+function snapshot() {
+  return { v: 1, savedAt: Date.now(), quotes: [...App.quotes.values()], sync: App.sync, audit: App.audit.slice(0, 200), log: App.log.slice(0, 300) };
+}
+function applyState(s) {
+  App.quotes = new Map((s && Array.isArray(s.quotes) ? s.quotes : []).filter(q => q && typeof q.id === 'string').map(q => [q.id, q]));
+  const d = { url: '', key: '', device: '', base: {}, baseData: {}, dirty: {}, purge: {}, conflicts: {}, lastSync: 0, server: null };
+  App.sync = Object.assign(d, (s && s.sync) || {});
+  if (!App.sync.device) App.sync.device = deviceGuess();
+  App.audit = (s && s.audit) || [];
+  App.log = (s && s.log) || [];
+  App.index = null;
+}
+async function loadState() { applyState(await Store.get('state')); }
+
+let saveTimer = 0, saving = null, bc = null;
+/* Writes start in the same moment as the change (batched per task), so a reload or a closed
+   window right after an edit can't lose it to a pending timer. */
+let savePending = false;
+function saveSoon() { if (savePending) return; savePending = true; saveTimer = 1; Promise.resolve().then(() => { savePending = false; saveNow(); }); }
+async function saveNow() {
+  saveTimer = 0;
+  if (App.readFailed || !App.owner) return;   // never overwrite stored quotes we couldn't read, or from a tab that isn't in charge
+  const snap = snapshot();
+  const p = (async () => {
+    try {
+      await Store.put({ state: snap });
+      if (!App.saveOK) logEvent('save', 'Saving works again.');
+      App.saveOK = true;
+      if (bc) bc.postMessage({ t: 'saved', from: App.tab });
+    } catch (e) {
+      App.saveOK = false;
+      logEvent('error', 'This browser refused to save: ' + (e && e.message || e));
+    }
+    updatePill();
+  })();
+  saving = p; await p;
+}
+async function flush() { if (savePending) await saveNow(); else if (saving) await saving; }
+
+/* Local backups: whole-library copies kept on this PC before bulk changes. */
+async function localBackup(reason) {
+  const key = 'backup:' + new Date().toISOString();
+  const quotes = [...App.quotes.values()];
+  try {
+    await Store.put({ [key]: { at: Date.now(), reason, count: quotes.filter(QL.isLive).length, quotes } });
+    const keys = (await Store.keys()).filter(k => String(k).startsWith('backup:')).sort().reverse();
+    for (const k of keys.slice(12)) await Store.del(k);
+    logEvent('backup', `Backup on this PC (${reason}): ${plural(quotes.length, 'quote')}.`);
+    return key;
+  } catch (e) {
+    logEvent('error', 'Could not save a backup on this PC: ' + (e && e.message || e));
+    return null;
+  }
+}
+async function listLocalBackups() {
+  const keys = (await Store.keys()).filter(k => String(k).startsWith('backup:')).sort().reverse();
+  const out = [];
+  for (const k of keys) { const b = await Store.get(k); if (b) out.push({ key: k, at: b.at, reason: b.reason, count: b.count, total: (b.quotes || []).length }); }
+  return out;
+}
+
+/* ---------- record operations: every change marks the quote for sync ---------- */
+function deviceGuess() {
+  const ua = navigator.userAgent || '';
+  const kind = /Windows/.test(ua) ? 'Windows PC' : /Mac/.test(ua) ? 'Mac' : /iPhone|iPad/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Android' : 'Device';
+  return kind + ' ' + Math.random().toString(36).slice(2, 5).toUpperCase();
+}
+function touched(id) {
+  App.sync.dirty[id] = 1;
+  delete App.sync.purge[id];
+}
+function changed(opts = {}) {
+  App.index = null;
+  saveSoon();
+  if (!opts.noSync) syncSoon(2500);
+  if (!opts.noRender) render();
+}
+function putQuote(rec) { App.quotes.set(rec.id, rec); touched(rec.id); }
+/* Apply fn to a copy; nothing happens if it ends up identical. Returns the new record or null. */
+function editQuote(id, fn) {
+  const cur = App.quotes.get(id); if (!cur) return null;
+  const next = QL.clone(cur); fn(next);
+  if (QL.deepEq(next, cur)) return null;
+  next.updated_at = QL.isoLocal();
+  putQuote(next);
+  return next;
+}
+function purgeQuote(id) {
+  App.quotes.delete(id);
+  delete App.sync.dirty[id];
+  delete App.sync.conflicts[id];
+  if (App.sync.base[id] !== undefined) App.sync.purge[id] = App.sync.base[id];
+}
+/* Undo works by putting back the records as they were (a fresh edit, so it syncs too). */
+function remember(label, befores) { App.undo = { label, befores }; }
+function undo() {
+  const u = App.undo; if (!u) return;
+  App.undo = null;
+  for (const { id, before } of u.befores) {
+    if (!before) { if (App.quotes.has(id)) purgeQuote(id); continue; }
+    const rec = QL.clone(before);
+    if (App.quotes.has(id) || App.sync.base[id] !== undefined) rec.updated_at = QL.isoLocal();
+    putQuote(rec);
+  }
+  logEvent('edit', 'Undid: ' + u.label);
+  changed();
+  toast('Undone.');
+}
+function trashQuote(id) {
+  const before = QL.clone(App.quotes.get(id));
+  if (!editQuote(id, r => { r.deleted_at = QL.isoLocal(); })) return;
+  remember('move to Trash', [{ id, before }]);
+  if (App.readerId === id) closeReader(true);
+  changed();
+  toast('Moved to Trash.', { undo: true, action: { label: 'Open Trash', fn: () => setView('trash') } });
+}
+function restoreQuote(id) {
+  const before = QL.clone(App.quotes.get(id));
+  if (!editQuote(id, r => { delete r.deleted_at; })) return;
+  remember('restore', [{ id, before }]);
+  changed();
+  toast('Restored to the library.', { undo: true });
+}
+async function purgeForever(ids) {
+  if (!ids.length) return;
+  await localBackup(ids.length === 1 ? 'before deleting a quote forever' : 'before emptying Trash');
+  const befores = ids.map(id => ({ id, before: QL.clone(App.quotes.get(id)) }));
+  ids.forEach(purgeQuote);
+  remember(ids.length === 1 ? 'delete forever' : 'empty Trash', befores);
+  logEvent('edit', `Deleted ${plural(ids.length, 'quote')} forever.`);
+  changed();
+  toast(ids.length === 1 ? 'Deleted forever.' : `Deleted ${plural(ids.length, 'quote')} forever.`, { undo: true });
+}
+function copyQuote(q) {
+  const who = [q.author, q.source].filter(Boolean).join(', ');
+  copyText(q.text + (who ? '\n— ' + who : ''), 'Quote copied.');
+}
+async function copyText(t, msg) {
+  try { await navigator.clipboard.writeText(t); toast(msg || 'Copied.'); }
+  catch (e) {
+    const ta = h('textarea', { style: { position: 'fixed', opacity: '0' } }); ta.value = t; document.body.append(ta); ta.select();
+    try { document.execCommand('copy'); toast(msg || 'Copied.'); } catch (e2) { toast('Couldn’t copy. Select the text and press Ctrl+C.'); }
+    ta.remove();
+  }
+}
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type: type || 'application/json' }));
+  const a = h('a', { href: url, download: name }); document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* ============ Drive sync: this PC first, then your own Apps Script and Drive file ============ */
+/*
+  Every change is saved on this PC at once, so the app works with no internet.
+  The shared copy is one JSON file in your Google Drive (00_Apps/Quotes/quotes-sync.json),
+  kept by a small Apps Script in your account that answers only requests carrying your key.
+  Each quote is its own record with a revision number. Changes to different quotes never
+  collide. If the same quote changed on both PCs, fields are merged one by one; only a field
+  changed on both sides to different values is held back and shown to you to choose.
+*/
+const Sync = { busy: false, again: false, timer: 0, err: null, detail: '', fails: 0, backupLabel: null, notes: [] };
+const syncReady = () => !!(App.sync.url && App.sync.key);
+const pendingCount = () => Object.keys(App.sync.dirty).filter(id => !App.sync.conflicts[id]).length + Object.keys(App.sync.purge).length;
+const conflictCount = () => Object.keys(App.sync.conflicts).length;
+const validScriptUrl = url => /^https:\/\/script\.google(usercontent)?\.com\/.+\/exec$/.test(url) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url);
+function syncSoon(ms) { clearTimeout(Sync.timer); if (syncReady()) Sync.timer = setTimeout(() => syncNow(false), ms); }
+
+async function syncCall(body, url) {
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+  const t = setTimeout(() => ctl && ctl.abort(), 45000);
+  try {
+    const res = await fetch(url || App.sync.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), redirect: 'follow', signal: ctl ? ctl.signal : undefined });
+    let out;
+    try { out = await res.json(); } catch (e) { throw Object.assign(new Error('not_json'), { code: 'not_json' }); }
+    if (!out || !out.ok) throw Object.assign(new Error((out && out.error) || 'server'), { code: (out && out.error) || 'server', detail: out && out.detail });
+    return out;
+  } catch (e) {
+    if (!e.code) e.code = e.name === 'AbortError' ? 'timeout' : 'network';
+    throw e;
+  } finally { clearTimeout(t); }
+}
+function syncErrText(code, detail) {
+  return {
+    bad_key: 'The sync key doesn’t match your Quotes sync script',
+    not_json: 'The link didn’t answer like the Quotes sync script. Check the Web app link, and that access is set to “Anyone”',
+    timeout: 'Google took too long to answer; will retry', network: 'Couldn’t reach Google; will retry', offline: 'You’re offline',
+    busy: 'The other PC was syncing at the same moment; will retry',
+    corrupt_store: 'The Drive data file can’t be read. Nothing was overwritten. Restore a Drive backup (Settings › Backups)',
+    not_a_backup: 'That file isn’t one of the Quotes backups', corrupt_backup: 'That backup file can’t be read', not_found: 'That backup no longer exists',
+  }[code] || ('Server said: ' + code + (detail ? ' (' + detail + ')' : ''));
+}
+
+/* Bring one quote from the Drive copy into this PC, merging with local edits when there are any. */
+function reconcile(id, rev, theirs, purged, device, stats) {
+  const S = App.sync, local = App.quotes.get(id), dirty = !!S.dirty[id];
+  if (purged) {
+    if (dirty && local) {   // deleted forever on the other PC, edited here: keep it
+      S.base[id] = rev; S.baseData[id] = null; delete S.conflicts[id]; stats.kept.push(local.text);
+      return;
+    }
+    App.quotes.delete(id);
+    delete S.base[id]; delete S.baseData[id]; delete S.dirty[id]; delete S.conflicts[id]; delete S.purge[id];
+    stats.changed++;
+    return;
+  }
+  if (S.purge[id] !== undefined) {   // deleted forever here, edited on the other PC: keep their version
+    delete S.purge[id];
+    App.quotes.set(id, theirs); S.base[id] = rev; S.baseData[id] = theirs;
+    stats.kept.push(theirs.text); stats.changed++;
+    return;
+  }
+  if (!dirty || !local) {
+    App.quotes.set(id, theirs); S.base[id] = rev; S.baseData[id] = theirs; delete S.conflicts[id];
+    stats.changed++;
+    return;
+  }
+  const open = S.conflicts[id];
+  const base = open ? open.base : S.baseData[id];
+  const mine = open ? open.mine : local;
+  const { merged, clashes } = QL.merge3(base, mine, theirs);
+  S.base[id] = rev; S.baseData[id] = theirs;
+  App.quotes.set(id, merged);
+  stats.changed++;
+  if (clashes.length) {
+    S.conflicts[id] = { at: Date.now(), device: device || 'the other PC', base: base || null, mine, theirs, fields: clashes };
+    stats.clashed++;
+  } else {
+    delete S.conflicts[id];
+    if (QL.deepEq(merged, theirs)) delete S.dirty[id];
+    stats.merged++;
+  }
+}
+
+async function syncNow(manual) {
+  const S = App.sync;
+  if (!syncReady()) { updatePill(); if (manual) openSettings('sync'); return; }
+  if (Sync.busy) { Sync.again = true; return; }
+  if (navigator.onLine === false) { Sync.err = 'offline'; updatePill(); if (manual) toast('You’re offline. Everything is saved on this PC and will sync when you’re back online.'); return; }
+  Sync.busy = true; updatePill();
+  const sent = new Map(), changes = [];
+  const stats = { changed: 0, merged: 0, clashed: 0, kept: [], up: 0, down: 0 };
+  try {
+    for (const id of Object.keys(S.dirty)) {
+      if (S.conflicts[id]) continue;   // held back until you choose
+      const r = App.quotes.get(id);
+      if (!r) { delete S.dirty[id]; continue; }
+      sent.set(id, JSON.stringify(r));
+      changes.push({ id, baseRev: S.base[id] === undefined ? null : S.base[id], data: r });
+    }
+    const purging = Object.entries(S.purge);
+    for (const [id, rev] of purging) changes.push({ id, baseRev: rev, purge: true });
+    const req = { op: 'sync', v: 1, key: S.key, device: S.device, changes, have: Object.assign({}, S.base) };
+    if (Sync.backupLabel) req.backup = Sync.backupLabel;
+    const out = await syncCall(req);
+    Sync.backupLabel = null;
+    for (const a of out.accepted || []) {
+      if (!sent.has(a.id)) {   // a removal went through
+        if (S.purge[a.id] !== undefined) { delete S.purge[a.id]; delete S.base[a.id]; delete S.baseData[a.id]; stats.up++; }
+        continue;
+      }
+      S.base[a.id] = a.rev; S.baseData[a.id] = JSON.parse(sent.get(a.id)); stats.up++;
+      const r = App.quotes.get(a.id);
+      if (r && JSON.stringify(r) === sent.get(a.id)) delete S.dirty[a.id];   // edited again during the call: stays queued
+    }
+    for (const c of out.conflicts || []) reconcile(c.id, c.rev, c.data, c.purged, c.device, stats);
+    for (const u of out.updates || []) { reconcile(u.id, u.rev, u.data, u.purged, u.device, stats); stats.down++; }
+    S.server = { count: out.count, savedAt: out.savedAt, savedBy: out.savedBy, lastBackupAt: out.lastBackupAt, rev: out.serverRev };
+    Sync.err = null; Sync.detail = ''; Sync.fails = 0; S.lastSync = Date.now();
+    if (stats.up || stats.down || stats.clashed) logEvent('sync', `Synced: ${stats.up} sent, ${stats.down} received${stats.merged ? `, ${stats.merged} merged` : ''}${stats.clashed ? `, ${stats.clashed} need your choice` : ''}.`);
+  } catch (e) {
+    Sync.err = (e && e.code) || 'network'; Sync.detail = (e && e.detail) || '';
+    Sync.fails++;
+    if (!['offline', 'network', 'timeout', 'busy'].includes(Sync.err) || Sync.fails === 1) logEvent('error', 'Sync failed: ' + syncErrText(Sync.err, Sync.detail) + '.');
+  } finally {
+    Sync.busy = false;
+    if (stats.changed) App.index = null;
+    await saveNow();
+    if (stats.changed) render(); else updatePill();
+    if (stats.clashed) toast(`${plural(stats.clashed, 'quote')} changed on both PCs in the same place. Choose which version to keep.`, { ms: 10000, action: { label: 'Resolve', fn: openConflicts } });
+    if (stats.kept.length) toast(`${plural(stats.kept.length, 'quote')} deleted on one PC but edited on the other ${stats.kept.length === 1 ? 'was' : 'were'} kept.`, { ms: 9000 });
+    if (manual && !Sync.err) toast(stats.down || stats.up ? `Synced: ${stats.up} sent, ${stats.down} received.` : 'Up to date with Drive.');
+    if (manual && Sync.err) toast('Sync failed: ' + syncErrText(Sync.err, Sync.detail) + '.', { ms: 9000 });
+    if (Sync.again) { Sync.again = false; syncSoon(400); }
+    else if (Sync.err === 'bad_key' || Sync.err === 'corrupt_store') { }
+    else if (pendingCount() && Sync.err) syncSoon(Math.min(300000, 15000 * Math.pow(2, Math.min(Sync.fails, 4))));
+    else if (pendingCount()) syncSoon(1200);
+  }
+}
+
+function syncInit() {
+  window.addEventListener('online', () => { if (['offline', 'network', 'timeout'].includes(Sync.err)) Sync.err = null; updatePill(); syncNow(false); });
+  window.addEventListener('offline', () => { Sync.err = 'offline'; updatePill(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') { syncNow(false); checkNewDay(); }
+    else { flush(); if (pendingCount()) syncNow(false); }
+  });
+  window.addEventListener('pagehide', () => { flush(); });
+  setInterval(() => { if (document.visibilityState === 'visible') syncNow(false); }, 120000);
+  setInterval(updatePill, 30000);
+  if (syncReady()) setTimeout(() => syncNow(false), 300);
+}
+
+/* ---------- connecting a PC ---------- */
+function setupLink() {
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify({ u: App.sync.url, k: App.sync.key })))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return location.origin + location.pathname + '#sync=' + payload;
+}
+function readSetupHash() {
+  const m = /^#sync=([A-Za-z0-9_-]+)$/.exec(location.hash || '');
+  if (!m) return null;
+  let o = null;
+  try { const b = m[1].replace(/-/g, '+').replace(/_/g, '/'); o = JSON.parse(decodeURIComponent(escape(atob(b + '==='.slice((b.length + 3) % 4))))); } catch (e) { }
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
+  return o && o.u && o.k ? { url: o.u, key: o.k } : null;
+}
+function offerSetupLink(link) {
+  // A setup link can come from anywhere, so confirm before sending quotes to the address inside it.
+  if (!validScriptUrl(link.url)) { toast('That setup link isn’t a Google Apps Script link, so it was ignored.'); return; }
+  if (link.url === App.sync.url && link.key === App.sync.key) { syncNow(true); return; }
+  const short = link.url.replace(/^https?:\/\//, '').replace(/^(.{34}).*(.{10})$/, '$1…$2');
+  modal({
+    title: 'Turn on Drive sync?',
+    body: [h('p', { class: 'mtext' }, 'This setup link connects Quotes on this PC to the sync script at ', h('b', { text: short }), '. Your quotes will be copied to and from that script’s Google Drive.'),
+      h('p', { class: 'hint' }, 'Only continue if you made this link on one of your own PCs.')],
+    actions: [{ label: 'Not now' }, { label: 'Turn on sync', primary: true, act: () => { applySync(link.url, link.key); return true; } }],
+  });
+}
+async function applySync(url, key, dev) {
+  const S = App.sync, changedServer = url !== S.url;
+  S.url = url; S.key = key; if (dev) S.device = dev;
+  Sync.err = null;
+  if (changedServer) {   // a different Drive copy: offer everything here to it; matching IDs merge, nothing duplicates
+    S.base = {}; S.baseData = {}; S.purge = {}; S.conflicts = {};
+    for (const id of App.quotes.keys()) S.dirty[id] = 1;
+    Sync.backupLabel = 'first-sync';
+  }
+  logEvent('sync', `Drive sync turned on (${S.device}).`);
+  await saveNow();
+  await syncNow(false);
+  if (!Sync.err) toast(`Drive sync is on. ${plural(live().length, 'quote')} on this PC.`);
+  else if (Sync.err !== 'bad_key') toast('Sync is set up, but the first sync failed: ' + syncErrText(Sync.err, Sync.detail) + '.', { ms: 9000 });
+}
+function turnOffSync() {
+  const S = App.sync;
+  S.url = ''; S.key = ''; S.base = {}; S.baseData = {}; S.purge = {}; S.conflicts = {}; S.server = null;
+  for (const id of App.quotes.keys()) S.dirty[id] = 1;
+  logEvent('sync', 'Drive sync turned off on this PC.');
+  saveNow(); updatePill();
+  toast('Sync is off on this PC. Your quotes stay here.');
+}
+
+/* ---------- Drive backups ---------- */
+async function driveBackups() { return (await syncCall({ op: 'backups', key: App.sync.key })).backups || []; }
+async function driveRestore(b) {
+  await flush();
+  if (pendingCount()) await syncNow(false);   // send local edits first so the restore sees them
+  await localBackup('before restoring a Drive backup');
+  const out = await syncCall({ op: 'restore', key: App.sync.key, fileId: b.id });
+  logEvent('backup', `Restored Drive backup ${out.from}: ${out.restored} quotes put back, ${out.trashed} newer ones moved to Trash.`);
+  await syncNow(false);
+  return out;
+}
+
+/* ============ UI shell: toasts, modals, sync pill, rail, routing ============ */
+function toast(msg, o = {}) {
+  const box = $('#toasts'), t = h('div', { class: 'toast', role: 'status' }, h('span', { text: msg }));
+  const add = (label, fn) => t.append(h('button', { text: label, onclick: () => { fn(); t.remove(); } }));
+  if (o.undo && App.undo) add('Undo', undo);
+  if (o.action) add(o.action.label, o.action.fn);
+  box.replaceChildren(t);
+  setTimeout(() => t.remove(), o.ms || 6000);
+}
+/* modal({ title, body: node|nodes, actions: [{label, primary, danger, act(el) -> true closes}], wide }) */
+function modal(o) {
+  const prevFocus = document.activeElement;
+  const scrim = h('div', { class: 'scrim' });
+  const close = () => { scrim.remove(); document.removeEventListener('keydown', onKey, true); if (o.onclose) o.onclose(); if (prevFocus && prevFocus.focus) prevFocus.focus(); };
+  const foot = (o.actions || []).length ? h('div', { class: 'mfoot' }, o.footNote ? h('span', { class: 'left', text: o.footNote }) : null,
+    o.actions.map(a => h('button', { class: 'btn' + (a.primary ? ' primary' : '') + (a.danger ? ' danger' : ''), disabled: a.disabled, dataset: a.id ? { act: a.id } : undefined,
+      onclick: async () => { if (!a.act) return close(); const r = await a.act(el); if (r !== false) close(); } }, a.icon ? h('span', { icon: a.icon }) : null, a.label))) : null;
+  const el = h('div', { class: 'modal' + (o.wide ? ' wide' : ''), role: 'dialog', 'aria-modal': 'true', 'aria-label': o.title },
+    h('div', { class: 'mhead' }, h('h2', { text: o.title }), h('button', { class: 'ib', 'aria-label': 'Close', icon: 'close', onclick: close })),
+    o.tabs || null,
+    h('div', { class: 'mbody' }, o.body),
+    foot);
+  scrim.append(el);
+  scrim.addEventListener('mousedown', e => { if (e.target === scrim && !o.sticky) close(); });
+  function onKey(e) {
+    if (e.key === 'Escape') { e.stopPropagation(); close(); }
+    if (e.key === 'Tab') {   // keep focus inside the dialog
+      const f = $$('button,input,textarea,select,a[href],[tabindex]:not([tabindex="-1"])', el).filter(x => !x.disabled && x.offsetParent);
+      if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    }
+  }
+  document.addEventListener('keydown', onKey, true);
+  $('#modal-root').append(scrim);
+  setTimeout(() => { const f = $('[autofocus]', el) || $('.mbody input,.mbody textarea', el) || $('.mfoot .primary', el); if (f) f.focus(); }, 20);
+  return { el, close };
+}
+function confirmBox(title, text, okLabel, danger) {
+  return new Promise(res => {
+    modal({ title, body: h('p', { class: 'mtext', text }), onclose: () => res(false),
+      actions: [{ label: 'Cancel', act: () => { res(false); return true; } }, { label: okLabel, primary: !danger, danger, act: () => { res(true); return true; } }] });
+  });
+}
+
+/* ---------- sync pill: where things stand, always visible ---------- */
+function updatePill() {
+  const el = $('#sync-pill'); if (!el) return;
+  const n = pendingCount(), c = conflictCount(), offline = navigator.onLine === false || Sync.err === 'offline';
+  let cls = '', txt = '', tip = '';
+  if (!App.saveOK) { cls = 'err'; txt = 'Not saved'; tip = 'This browser refused to save. Export a backup now (Settings › Import & export)'; }
+  else if (!syncReady()) { cls = 'local'; txt = 'On this PC only'; tip = 'Saved in this browser. Set up Drive sync to share with your other PC'; }
+  else if (c) { cls = 'conf'; txt = plural(c, 'conflict') + ' to resolve'; tip = 'The same quote changed on both PCs'; }
+  else if (Sync.busy) { cls = 'busy'; txt = 'Syncing…'; }
+  else if (offline) { cls = 'off'; txt = n ? `Offline · ${n} waiting` : 'Offline · all saved here'; tip = 'Saved on this PC; syncs when you’re back online'; }
+  else if (Sync.err) { cls = 'err'; txt = n ? `Not synced · ${n} waiting` : 'Sync problem'; tip = syncErrText(Sync.err, Sync.detail); }
+  else if (n) { cls = 'busy'; txt = `${n} to sync`; }
+  else { txt = 'Synced ' + ago(App.sync.lastSync); tip = 'Saved on this PC and in Google Drive › 00_Apps › Quotes'; }
+  el.className = 'pill ' + cls;
+  el.replaceChildren(h('i', { class: 'dot' }), h('span', { text: txt }));
+  el.title = (tip ? tip + '. ' : '') + 'Click for Drive sync.';
+  renderBanners();
+}
+function renderBanners() {
+  const box = $('#banners'); if (!box) return;
+  const out = [];
+  const c = conflictCount();
+  if (c) out.push(h('div', { class: 'banner warn' }, h('span', { icon: 'alert' }), h('span', {}, h('b', { text: plural(c, 'quote') }), ` changed on both PCs in the same field. Nothing is lost; choose which version to keep.`),
+    h('button', { class: 'btn sm', onclick: openConflicts, text: 'Resolve' })));
+  if (!App.saveOK) out.push(h('div', { class: 'banner bad' }, h('span', { icon: 'alert' }), h('span', { text: 'This browser refused to save your last change. Download a backup now.' }),
+    h('button', { class: 'btn sm', onclick: exportNow, text: 'Download backup' })));
+  if (Sync.err === 'bad_key' || Sync.err === 'corrupt_store') out.push(h('div', { class: 'banner bad' }, h('span', { icon: 'alert' }), h('span', { text: syncErrText(Sync.err) + '.' }),
+    h('button', { class: 'btn sm', onclick: () => openSettings(Sync.err === 'bad_key' ? 'sync' : 'backups'), text: 'Open' })));
+  box.replaceChildren(...out);
+}
+
+/* ---------- rail ---------- */
+function renderRail() {
+  const L = live(), T = trashed();
+  $('#ct-lib').textContent = L.length; $('#ct-trash').textContent = T.length || '';
+  $$('.nav [data-view]').forEach(b => { const on = b.dataset.view === App.view; b.classList.toggle('on', on); b.setAttribute('aria-current', on ? 'page' : 'false'); });
+  const f = App.filter;
+  facet('#facet-tags', 'tags', QL.tagCounts(L), f.tag, v => setFilter({ tag: f.tag === v ? null : v, author: null, source: null }), v => v);
+  facet('#facet-authors', 'authors', QL.authorCounts(L), f.author, v => setFilter({ author: f.author === v ? null : v, tag: null, source: null }), v => v || 'No author');
+  facet('#facet-sources', 'sources', QL.sourceCounts(L), f.source, v => setFilter({ source: f.source === v ? null : v, tag: null, author: null }), v => v || 'No source');
+}
+function facet(sel, key, rows, active, pick, label) {
+  const box = $(sel + ' .facet-list'), all = App.ui.facetAll[key], LIM = 10;
+  const named = rows.filter(r => r[0] !== ''), blank = rows.filter(r => r[0] === '');
+  let show = all ? named : named.slice(0, LIM);
+  if (active != null && active !== '' && !show.some(r => r[0] === active)) show = show.concat(named.filter(r => r[0] === active));
+  const list = show.concat(blank);
+  box.replaceChildren(...list.map(([v, n]) => h('button', { class: 'fct' + (v === active && App.view === 'library' ? ' on' : '') + (v === '' ? ' blank' : ''), title: label(v), onclick: () => pick(v) },
+    h('span', { text: label(v) }), h('span', { class: 'n', text: n }))));
+  const tg = $(sel + ' h3 button');
+  tg.hidden = named.length <= LIM;
+  tg.textContent = all ? 'Fewer' : `All ${named.length}`;
+  tg.onclick = () => { App.ui.facetAll[key] = !all; saveUI(); renderRail(); };
+  $(sel).hidden = !rows.length || (key !== 'tags' && named.length === 0);
+}
+function setFilter(patch) {
+  Object.assign(App.filter, patch);
+  App.libLimit = 200;
+  if (App.view !== 'library') setView('library'); else render();
+  $('.view').scrollTop = 0;
+  closeRail();
+}
+const VIEWS = ['discover', 'library', 'trash'];
+function setView(v, fromHash) {
+  if (!VIEWS.includes(v)) v = 'discover';
+  App.view = v;
+  if (!fromHash && location.hash.slice(1) !== v) { try { history.replaceState(null, '', '#' + v); } catch (e) { } }
+  closeRail();
+  render();
+  $('.view').scrollTop = 0;
+}
+function render() {
+  if (!App.booted) return;
+  renderRail();
+  updatePill();
+  if (App.view === 'library') renderLibrary();
+  else if (App.view === 'trash') renderTrash();
+  else renderDiscover();
+  renderReader();
+}
+function openRail() { $('.app').classList.add('railopen'); }
+function closeRail() { $('.app').classList.remove('railopen'); }
+
+/* ============ Views: Discover, Library, Trash, Reader ============ */
+function quoteSize(t) {
+  let n = 0; for (const ch of t) n += /[　-鿿豈-﫿]/.test(ch) ? 1.7 : 1;
+  return n <= 60 ? 34 : n <= 140 ? 29 : n <= 260 ? 25 : n <= 520 ? 21 : 18;
+}
+function attrLine(q, big) {
+  const bits = [];
+  if (q.author) bits.push(h('span', { class: 'who', text: (big ? '— ' : '') + q.author }));
+  if (q.source) bits.push(h('span', { class: 'src', text: (q.author ? ', ' : big ? '— ' : '') + q.source }));
+  return bits;
+}
+function tagButtons(q) {
+  return (q.tags || []).map(t => h('button', { class: 'tag' + (App.filter.tag === t && App.view === 'library' ? ' on' : ''), title: 'Show all quotes tagged ' + t, text: t, onclick: e => { e.stopPropagation(); setFilter({ tag: t, author: null, source: null }); } }));
+}
+/* Highlight a search term without ever treating the text as HTML. */
+function marked(text, needle) {
+  if (!needle) return [text];
+  const lo = text.toLowerCase(), n = needle.toLowerCase(), out = [];
+  let i = 0, j;
+  while ((j = lo.indexOf(n, i)) !== -1 && n) { if (j > i) out.push(text.slice(i, j)); out.push(h('mark', { text: text.slice(j, j + n.length) })); i = j + n.length; }
+  if (i < text.length) out.push(text.slice(i));
+  return out;
+}
+
+/* ---------- Discover ---------- */
+function discoverPool() { const ex = new Set(App.ui.excludeTags || []); return live().filter(q => !(q.tags || []).some(t => ex.has(t))); }
+function markSeen(id, via) {
+  if (!id) return;
+  const H = App.ui.hist, e = H[id] || { n: 0, last: 0 };
+  H[id] = { n: e.n + 1, last: Date.now() };
+  App.ui.recent = [{ id, at: Date.now(), via }, ...(App.ui.recent || []).filter(r => r.id !== id)].slice(0, 40);
+  saveUI();
+}
+function ensureDaily() {
+  const today = dayKey(), pool = discoverPool();
+  let d = App.ui.daily;
+  if (!d || d.day !== today || !Array.isArray(d.ids)) {
+    const ids = QL.pickDaily(pool, App.ui.hist, today, App.ui.dailyN || 5);
+    d = App.ui.daily = { day: today, ids, base: ids.length, pos: 0, max: 0, cur: ids[0] || null, via: 'today' };
+    if (d.cur) markSeen(d.cur, 'today');
+    saveUI();
+  }
+  const ok = id => { const q = App.quotes.get(id); return q && QL.isLive(q); };
+  if (d.cur && !ok(d.cur)) {   // the quote on show was deleted or trashed
+    const keep = d.ids.filter(ok);
+    d.ids = keep; d.base = Math.min(d.base, keep.length); d.pos = Math.min(d.pos, Math.max(0, keep.length - 1)); d.cur = keep[d.pos] || null; d.via = 'today';
+    if (!d.cur && pool.length) {
+      d.ids = QL.pickDaily(pool, App.ui.hist, today + ':refill', App.ui.dailyN || 5);
+      d.base = d.ids.length; d.pos = 0; d.max = 0; d.cur = d.ids[0] || null;
+      if (d.cur) markSeen(d.cur, 'today');
+    }
+    saveUI();
+  }
+  return d;
+}
+function checkNewDay() { const d = App.ui.daily; if (d && d.day !== dayKey() && App.view === 'discover') render(); }
+function discShow(id, via) { const d = App.ui.daily; d.cur = id; d.via = via; markSeen(id, via); render(); }
+function discNext() {
+  const d = ensureDaily();
+  if (d.via === 'today' || d.via === 'more') {
+    if (d.pos < d.ids.length - 1) { d.pos++; d.max = Math.max(d.max, d.pos); return discShow(d.ids[d.pos], d.pos < d.base ? 'today' : 'more'); }
+  } else if (d.ids.length) { return discShow(d.ids[d.pos], d.pos < d.base ? 'today' : 'more'); }
+  const extra = QL.pickDaily(discoverPool(), App.ui.hist, dayKey() + ':' + d.ids.length, 1, new Set(d.ids));
+  if (!extra.length) { toast('You’ve seen everything in Discover today. Shuffle keeps going.'); return; }
+  d.ids.push(extra[0]); d.pos = d.ids.length - 1; d.max = d.pos;
+  discShow(extra[0], 'more');
+}
+function discPrev() {
+  const d = ensureDaily();
+  if (d.via === 'shuffle') return discShow(d.ids[d.pos], d.pos < d.base ? 'today' : 'more');
+  if (d.pos > 0) { d.pos--; discShow(d.ids[d.pos], d.pos < d.base ? 'today' : 'more'); }
+}
+function discShuffle() {
+  const d = ensureDaily();
+  const id = QL.pickShuffle(discoverPool(), App.ui.hist, new Set([d.cur]));
+  if (id) discShow(id, 'shuffle');
+}
+function renderDiscover() {
+  const v = $('#view'); App.mounted = 'discover';
+  if (!App.quotes.size) return v.replaceChildren(welcome());
+  const pool = discoverPool();
+  if (!pool.length) return v.replaceChildren(h('div', { class: 'empty' }, h('h1', { text: 'Nothing to discover' }),
+    h('p', { text: live().length ? 'Every quote has a tag you left out of Discover.' : 'Your library is empty apart from Trash.' }),
+    h('div', { class: 'btns' }, live().length ? h('button', { class: 'btn', text: 'Discover settings', onclick: () => openSettings('display') }) : h('button', { class: 'btn primary', text: 'Capture a quote', onclick: () => openEditor() }))));
+  const d = ensureDaily();
+  const q = App.quotes.get(d.cur);
+  if (!q) return v.replaceChildren(h('div', { class: 'empty' }, h('p', { text: 'Nothing to show.' })));
+  const n = d.base, label = d.via === 'shuffle' ? 'Shuffle' : d.via === 'more' ? 'More from your library' : `Today · ${d.pos + 1} of ${n}`;
+  const dots = h('div', { class: 'dots', 'aria-label': label }, h('span', { class: 'lbl', text: d.via === 'today' ? `${d.pos + 1} / ${n}` : '' }),
+    Array.from({ length: n }, (_, i) => h('i', { class: d.via === 'today' && i === d.pos ? 'on' : i <= d.max ? 'seen' : '' })));
+  const card = h('article', { class: 'card hero', style: { '--qs': quoteSize(q.text) + 'px' } },
+    h('span', { class: 'via', text: label }),
+    h('blockquote', { class: 'qtext', text: q.text }),
+    (q.author || q.source) ? h('p', { class: 'attr' }, attrLine(q, true)) : null,
+    h('div', { class: 'tags' }, tagButtons(q), q.captured_at ? h('span', { class: 'tag', style: { background: 'none', border: '0', color: 'var(--faint)' }, text: 'Captured ' + fmtDate(q.captured_at) }) : null),
+    h('div', { class: 'acts' },
+      h('button', { class: 'btn', title: 'Previous (←)', onclick: discPrev, disabled: d.via !== 'shuffle' && d.pos === 0, icon: 'prev' }, h('span', { class: 'sr', text: 'Previous' })),
+      h('button', { class: 'btn primary', title: 'Next (→ or Space)', onclick: discNext, icon: 'next' }, 'Next'),
+      h('button', { class: 'btn', title: 'Shuffle (S)', onclick: discShuffle, icon: 'shuffle' }, 'Shuffle'),
+      h('span', { class: 'sp' }),
+      h('button', { class: 'btn ghost', title: 'Copy (C)', onclick: () => copyQuote(q), icon: 'copy' }, 'Copy'),
+      h('button', { class: 'btn ghost', title: 'Edit (E)', onclick: () => openEditor(q.id), icon: 'edit' }, 'Edit'),
+      h('button', { class: 'btn ghost', title: 'Open details and related', onclick: () => openReader(q.id), icon: 'open' }, 'Open')));
+  const recent = (App.ui.recent || []).filter(r => r.id !== q.id && App.quotes.get(r.id) && QL.isLive(App.quotes.get(r.id))).slice(0, 8);
+  v.replaceChildren(h('div', { class: 'disc' },
+    h('div', { class: 'dhead' }, h('h1', { text: 'Discover' }), h('span', { class: 'date', text: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) }), dots),
+    card,
+    relatedBlock(q.id, 'Related in your library'),
+    recent.length ? h('section', { class: 'sec' }, h('h2', {}, 'Recently shown', h('span', { class: 'aside', text: 'kept on this PC only' })),
+      h('div', { class: 'hist' }, recent.map(r => { const x = App.quotes.get(r.id); return h('button', { class: 'hrow', onclick: () => openReader(r.id) }, h('span', { class: 't', text: x.text.replace(/\s+/g, ' ') }), h('span', { class: 'w', text: ({ today: 'Today', more: 'More', shuffle: 'Shuffle', open: 'Opened', related: 'Related' }[r.via] || '') + ' · ' + ago(r.at) })); }))) : null));
+}
+function relatedBlock(id, title) {
+  const { items, hiddenDups } = QL.related(getIndex(), id);
+  if (!items.length) return h('section', { class: 'sec' }, h('h2', { text: title }), h('p', { class: 'hint', text: 'Nothing related yet. Tags and shared words build connections as the library grows.' }));
+  return h('section', { class: 'sec' },
+    h('h2', {}, title, hiddenDups.length ? h('button', { class: 'aside', style: { border: 0, background: 'none', cursor: 'pointer', color: 'var(--faint)' }, title: 'Near-duplicates are left out of Related', onclick: () => openReader(hiddenDups[0], 'related'), text: `${plural(hiddenDups.length, 'near-duplicate')} hidden` }) : null),
+    h('div', { class: 'rel' }, items.map(r => {
+      const x = App.quotes.get(r.id);
+      return h('button', { class: 'rcard', onclick: () => openReader(r.id, 'related') },
+        h('span', { class: 'qtext', text: x.text }),
+        h('span', { class: 'why', text: r.reasons.slice(0, 2).join(' · ') }));
+    })));
+}
+function welcome() {
+  return h('div', { class: 'empty' }, h('div', { class: 'big-q', text: '“' }), h('h1', { text: 'Your quotes, on both PCs' }),
+    h('p', { text: 'Bring in your Flow snapshot, capture something new, or connect this PC to the Drive copy you already set up on the other one.' }),
+    h('div', { class: 'btns' },
+      h('button', { class: 'btn primary', icon: 'upload', onclick: () => pickImportFile() }, 'Import a file'),
+      h('button', { class: 'btn', icon: 'plus', onclick: () => openEditor() }, 'Capture a quote'),
+      h('button', { class: 'btn', icon: 'sync', onclick: () => openSettings('sync') }, 'Connect Drive sync')),
+    h('p', { class: 'hint', style: { marginTop: '22px' }, text: 'Imports accept a Flow snapshot (flow_quotes.json), a Quotes export, or an Ikes JSON export.' }));
+}
+
+/* ---------- Library ---------- */
+function mountLibrary() {
+  const v = $('#view'); App.mounted = 'library';
+  const inp = h('input', { class: 'inp', id: 'q', type: 'search', placeholder: 'Search text, author, source, notes, tags', 'aria-label': 'Search quotes', autocomplete: 'off', spellcheck: 'false' });
+  inp.value = App.filter.q;
+  let t = 0;
+  inp.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { App.filter.q = inp.value; App.libLimit = 200; updateLibrary(); }, 90); });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { const r = $('.qrow'); if (r) { e.preventDefault(); r.focus(); } }
+    if (e.key === 'Escape' && inp.value) { e.stopPropagation(); inp.value = ''; App.filter.q = ''; updateLibrary(); }
+    if (e.key === 'Enter') { const r = $('.qrow'); if (r) r.click(); }
+  });
+  v.replaceChildren(h('div', { class: 'lib' },
+    h('div', { class: 'lhead' },
+      h('div', { class: 'search' }, h('span', { icon: 'search' }), inp, h('kbd', { text: '/' })),
+      h('div', { class: 'ltools', id: 'ltools' })),
+    h('ol', { class: 'qlist', id: 'qlist' }),
+    h('div', { class: 'more', id: 'lmore' })));
+  $('#qlist').addEventListener('keydown', e => {
+    const rows = $$('.qrow'), i = rows.indexOf(document.activeElement);
+    if (i < 0) return;
+    if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); (rows[i + 1] || rows[i]).focus(); }
+    if (e.key === 'ArrowUp' || e.key === 'k') { e.preventDefault(); (i === 0 ? $('#q') : rows[i - 1]).focus(); }
+  });
+}
+function libResults() { return QL.query([...App.quotes.values()], App.filter); }
+function updateLibrary() {
+  const f = App.filter, res = libResults(), needle = f.q.trim();
+  const chips = [];
+  if (f.tag) chips.push(['Tag: ' + f.tag, { tag: null }]);
+  if (f.author != null) chips.push([f.author ? 'Author: ' + f.author : 'No author', { author: null }]);
+  if (f.source != null) chips.push([f.source ? 'Source: ' + f.source : 'No source', { source: null }]);
+  $('#ltools').replaceChildren(
+    ...chips.map(([label, patch]) => h('button', { class: 'fchip', title: 'Remove filter', onclick: () => setFilter(patch) }, label, h('span', { icon: 'close' }))),
+    h('span', { class: 'n', text: `${plural(res.length, 'quote')}` }),
+    h('button', { class: 'btn ghost sm', title: 'Change order', onclick: () => { f.oldest = !f.oldest; updateLibrary(); }, text: f.oldest ? 'Oldest first' : 'Newest first' }),
+    h('span', { class: 'sp' }),
+    h('button', { class: 'btn sm', icon: 'dice', title: 'Open a random quote from this list (R)', disabled: !res.length, onclick: libRandom }, 'Random'));
+  const list = $('#qlist');
+  if (!res.length) {
+    list.replaceChildren(h('li', { class: 'none' }, App.quotes.size ? (needle ? `No quotes contain “${needle}”.` : 'No quotes match these filters.') : 'Your library is empty.'));
+    $('#lmore').replaceChildren(); return;
+  }
+  list.replaceChildren(...res.slice(0, App.libLimit).map(q => h('li', {}, h('button', { class: 'qrow' + (App.readerId === q.id ? ' sel' : ''), dataset: { id: q.id }, onclick: () => openReader(q.id, 'open') },
+    h('span', { class: 'qtext' }, marked(q.text, needle)),
+    h('span', { class: 'meta' },
+      q.author ? h('span', { class: 'who' }, marked(q.author, needle)) : null,
+      q.source ? h('span', {}, marked(q.source, needle)) : null,
+      q.captured_at ? h('span', { text: fmtDate(q.captured_at) }) : null,
+      (q.tags || []).length ? h('span', { class: 'tg' }, marked((q.tags || []).map(t => '#' + t).join(' '), needle)) : null,
+      needle && q.note && q.note.toLowerCase().includes(needle.toLowerCase()) ? h('span', {}, 'Note: ', marked(q.note.length > 80 ? q.note.slice(0, 80) + '…' : q.note, needle)) : null)))));
+  $('#lmore').replaceChildren(res.length > App.libLimit ? h('button', { class: 'btn', onclick: () => { App.libLimit += 300; updateLibrary(); } }, `Show ${Math.min(300, res.length - App.libLimit)} more`) : '');
+}
+function renderLibrary() { if (App.mounted !== 'library' || !$('#qlist')) mountLibrary(); updateLibrary(); }
+let lastRandom = null;
+function libRandom() {
+  const res = libResults(); if (!res.length) return;
+  let pick = res[Math.floor(Math.random() * res.length)];
+  if (res.length > 1 && pick.id === lastRandom) pick = res[(res.indexOf(pick) + 1 + Math.floor(Math.random() * (res.length - 1))) % res.length];
+  lastRandom = pick.id;
+  openReader(pick.id, 'open');
+}
+
+/* ---------- Trash ---------- */
+function renderTrash() {
+  const v = $('#view'); App.mounted = 'trash';
+  const T = trashed();
+  v.replaceChildren(h('div', { class: 'lib' },
+    h('div', { class: 'dhead', style: { marginTop: '10px' } }, h('h1', { text: 'Trash' }),
+      T.length ? h('button', { class: 'btn danger', style: { marginLeft: 'auto' }, icon: 'trash', onclick: async () => { if (await confirmBox('Empty Trash?', `This deletes ${plural(T.length, 'quote')} forever, on both PCs. A backup is saved on this PC first.`, 'Delete forever', true)) purgeForever(T.map(q => q.id)); } }, 'Empty Trash') : null),
+    h('p', { class: 'hint', text: 'Quotes in Trash can be restored. They stay out of Discover, search and Related. Deleting forever removes them from both PCs.' }),
+    T.length ? h('ol', { class: 'qlist' }, T.map(q => h('li', {}, h('div', { class: 'qrow' },
+      h('span', { class: 'qtext', text: q.text }),
+      h('span', { class: 'meta' }, h('span', { class: 'del', text: 'Moved to Trash ' + fmtDateTime(q.deleted_at) }), q.author ? h('span', { class: 'who', text: q.author }) : null,
+        h('span', { class: 'sp', style: { flex: 1 } }),
+        h('button', { class: 'btn sm', icon: 'restore', onclick: () => restoreQuote(q.id) }, 'Restore'),
+        h('button', { class: 'btn sm ghost danger', onclick: async () => { if (await confirmBox('Delete forever?', 'This quote is removed from both PCs. A backup is saved on this PC first.', 'Delete forever', true)) purgeForever([q.id]); } }, 'Delete forever')))))) :
+      h('p', { class: 'none', text: 'Trash is empty.' })));
+}
+
+/* ---------- Reader ---------- */
+function openReader(id, via) {
+  if (!App.quotes.get(id)) return;
+  if (App.readerId !== id && via !== 'none') markSeen(id, via || 'open');
+  App.readerId = id;
+  render();
+  const b = $('.rbody'); if (b) b.scrollTop = 0;
+}
+function closeReader(silent) { App.readerId = null; if (!silent) render(); else renderReader(); }
+function renderReader() {
+  const el = $('#reader'), app = $('.app');
+  const q = App.readerId && App.quotes.get(App.readerId);
+  if (!q) { App.readerId = null; el.hidden = true; el.replaceChildren(); app.classList.remove('reading'); return; }
+  el.hidden = false; app.classList.add('reading');
+  const known = new Set([...QL.FLOW_FIELDS, 'deleted_at']);
+  const extra = Object.keys(q).filter(k => !known.has(k));
+  const ls = q.legacy_source;
+  el.replaceChildren(
+    h('div', { class: 'rtop' }, h('span', { class: 'ttl', text: q.deleted_at ? 'In Trash' : 'Quote' }), h('span', { class: 'sp' }),
+      h('button', { class: 'ib', title: 'Copy (C)', 'aria-label': 'Copy', icon: 'copy', onclick: () => copyQuote(q) }),
+      q.deleted_at ? h('button', { class: 'ib', title: 'Restore', 'aria-label': 'Restore', icon: 'restore', onclick: () => restoreQuote(q.id) })
+        : h('button', { class: 'ib', title: 'Edit (E)', 'aria-label': 'Edit', icon: 'edit', onclick: () => openEditor(q.id) }),
+      q.deleted_at ? null : h('button', { class: 'ib', title: 'Move to Trash (Del)', 'aria-label': 'Move to Trash', icon: 'trash', onclick: () => trashQuote(q.id) }),
+      h('button', { class: 'ib', title: 'Close (Esc)', 'aria-label': 'Close', icon: 'close', onclick: () => closeReader() })),
+    h('div', { class: 'rbody' },
+      q.deleted_at ? h('p', { class: 'trashnote', text: 'Moved to Trash ' + fmtDateTime(q.deleted_at) + '. Restore it to bring it back to the library.' }) : null,
+      App.sync.conflicts[q.id] ? h('div', { class: 'banner warn', style: { borderRadius: '9px', marginBottom: '14px', padding: '8px 12px' } }, h('span', { text: 'Changed on both PCs.' }), h('button', { class: 'btn sm', text: 'Resolve', onclick: openConflicts })) : null,
+      h('blockquote', { class: 'qtext', text: q.text }),
+      (q.author || q.source) ? h('p', { class: 'attr' }, attrLine(q, true)) : null,
+      (q.tags || []).length ? h('div', { class: 'tags' }, tagButtons(q)) : null,
+      q.note ? h('div', { class: 'note', text: q.note }) : null,
+      q.deleted_at ? null : relatedBlock(q.id, 'Related'),
+      h('details', { class: 'details' }, h('summary', { text: 'Details' }),
+        h('dl', {},
+          h('dt', { text: 'Captured' }), h('dd', { text: fmtDateTime(q.captured_at) || '—' }),
+          h('dt', { text: 'Added' }), h('dd', { text: fmtDateTime(q.created_at) || '—' }),
+          h('dt', { text: 'Last edited' }), h('dd', { text: fmtDateTime(q.updated_at) || '—' }),
+          h('dt', { text: 'ID' }), h('dd', { text: q.id }),
+          (q.legacy_ids || []).length ? [h('dt', { text: 'Legacy IDs' }), h('dd', { text: q.legacy_ids.join(', ') })] : null,
+          ls ? [h('dt', { text: 'Legacy source' }), h('dd', { text: [ls.app, ls.name, ls.type].filter(Boolean).join(' · ') })] : null,
+          extra.length ? [h('dt', { text: 'Other fields' }), h('dd', { text: JSON.stringify(Object.fromEntries(extra.map(k => [k, q[k]]))) })] : null))));
+  $$('.qrow').forEach(r => r.classList.toggle('sel', r.dataset.id === q.id));
+}
+
+/* ============ Capture and edit; conflict resolver ============ */
+const nl = s => String(s ?? '').replace(/\r\n?/g, '\n');
+function toLocalInput(s) {
+  const t = QL.ts(s); if (!t) return '';
+  const d = new Date(t), p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function tagInput(initial) {
+  const state = initial.slice();
+  const known = QL.tagCounts(live());
+  const input = h('input', { type: 'text', placeholder: state.length ? 'Add another tag' : 'Add a tag, press Enter', 'aria-label': 'Tags', autocomplete: 'off', spellcheck: 'false' });
+  const sugg = h('div', { class: 'sugg', role: 'listbox' }); sugg.hidden = true;
+  const wrap = h('div', { class: 'tagin', onclick: e => { if (e.target === wrap) input.focus(); } });
+  let hi = 0, opts = [];
+  function canon(v) {
+    v = v.replace(/\s+/g, ' ').trim().replace(/^#/, '');
+    if (!v) return '';
+    const hit = known.find(([t]) => t.toLowerCase() === v.toLowerCase());   // reuse the existing spelling
+    return hit ? hit[0] : v;
+  }
+  function add(v) { v = canon(v); if (v && !state.includes(v)) state.push(v); input.value = ''; draw(); input.focus(); }
+  function draw() {
+    wrap.replaceChildren(...state.map((t, i) => h('span', { class: 'tag' }, t, h('button', { type: 'button', 'aria-label': 'Remove tag ' + t, icon: 'close', onclick: () => { state.splice(i, 1); draw(); input.focus(); } }))), input, sugg);
+    suggest();
+  }
+  function suggest() {
+    const v = input.value.trim().toLowerCase();
+    opts = v ? known.filter(([t]) => !state.includes(t) && t.toLowerCase().includes(v)).slice(0, 8) : [];
+    hi = 0;
+    sugg.hidden = !opts.length || document.activeElement !== input;
+    sugg.replaceChildren(...opts.map(([t, n], i) => h('button', { type: 'button', class: i === hi ? 'on' : '', onmousedown: e => { e.preventDefault(); add(t); } }, h('span', { text: t }), h('span', { class: 'n', text: n }))));
+  }
+  input.addEventListener('input', () => { if (/,/.test(input.value)) { input.value.split(',').slice(0, -1).forEach(add); input.value = input.value.split(',').pop(); } suggest(); });
+  input.addEventListener('focus', suggest);
+  input.addEventListener('blur', () => { sugg.hidden = true; });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) { if (opts.length && !sugg.hidden) { e.preventDefault(); add(opts[hi][0]); } else if (input.value.trim()) { e.preventDefault(); add(input.value); } }
+    else if (e.key === 'ArrowDown' && opts.length) { e.preventDefault(); hi = (hi + 1) % opts.length; $$('button', sugg).forEach((b, i) => b.classList.toggle('on', i === hi)); }
+    else if (e.key === 'ArrowUp' && opts.length) { e.preventDefault(); hi = (hi - 1 + opts.length) % opts.length; $$('button', sugg).forEach((b, i) => b.classList.toggle('on', i === hi)); }
+    else if (e.key === 'Backspace' && !input.value && state.length) { state.pop(); draw(); input.focus(); }
+    else if (e.key === 'Escape' && !sugg.hidden) { e.stopPropagation(); sugg.hidden = true; }
+  });
+  draw();
+  return { el: wrap, get: () => { const v = canon(input.value); return v && !state.includes(v) ? state.concat(v) : state.slice(); } };
+}
+
+/* Quick capture when id is empty; the full editor otherwise. Unchanged fields keep their exact stored value. */
+function openEditor(id, prefill) {
+  const cur = id ? App.quotes.get(id) : null;
+  if (id && !cur) return;
+  if (cur && App.sync.conflicts[id]) { openConflicts(); return; }
+  const isNew = !cur;
+  const P = prefill || {};
+  const orig = cur || { text: P.text || '', author: P.author || '', source: P.source || '', note: P.note || '', tags: [], captured_at: '' };
+  const ta = h('textarea', { class: 'ta quote', rows: isNew ? 4 : 6, 'aria-label': 'Quote text', placeholder: 'Paste or type the exact words', autofocus: true });
+  ta.value = nl(orig.text);
+  const author = h('input', { class: 'inp', 'aria-label': 'Author', placeholder: 'Who said or wrote it (optional)' }); author.value = orig.author || '';
+  const source = h('input', { class: 'inp', 'aria-label': 'Source', placeholder: 'Book, talk, page… (optional)' }); source.value = orig.source || '';
+  const note = h('textarea', { class: 'ta', rows: 3, 'aria-label': 'Note', placeholder: 'Your own thoughts (optional)' }); note.value = nl(orig.note || '');
+  const capInit = cur ? toLocalInput(cur.captured_at) : '';
+  const cap = h('input', { class: 'inp', type: 'datetime-local', 'aria-label': 'Capture date' }); cap.value = capInit;
+  const tags = tagInput(orig.tags || []);
+  const dup = h('div'); const err = h('p', { class: 'hint bad', role: 'alert' });
+  const authors = h('datalist', { id: 'dl-authors' }, QL.authorCounts(live()).filter(r => r[0]).slice(0, 200).map(r => h('option', { value: r[0] })));
+  const sources = h('datalist', { id: 'dl-sources' }, QL.sourceCounts(live()).filter(r => r[0]).slice(0, 200).map(r => h('option', { value: r[0] })));
+  author.setAttribute('list', 'dl-authors'); source.setAttribute('list', 'dl-sources');
+  let dt = 0;
+  const checkDup = () => {
+    const k = QL.normText(ta.value);
+    const twin = k && live().find(q => q.id !== id && QL.normText(q.text) === k);
+    dup.replaceChildren(twin ? h('div', { class: 'dupwarn' }, h('span', { icon: 'alert' }), h('span', { text: `Already in your library${twin.captured_at ? ' (captured ' + fmtDate(twin.captured_at) + ')' : ''}.` }),
+      h('button', { class: 'btn sm', type: 'button', text: 'Open it', onclick: () => { m.close(); openReader(twin.id); } })) : '');
+  };
+  ta.addEventListener('input', () => { clearTimeout(dt); dt = setTimeout(checkDup, 200); err.textContent = ''; });
+  const more = h('details', { class: 'details', style: { margin: '0 0 6px' } }, h('summary', { text: isNew ? 'Note and capture date' : 'Note, capture date and record details' }),
+    h('div', { style: { marginTop: '12px' } },
+      h('label', { class: 'field' }, h('span', { text: 'Note' }), note),
+      h('label', { class: 'field' }, h('span', { text: 'Captured' }), h('div', { style: { display: 'flex', gap: '8px' } }, cap, h('button', { class: 'btn', type: 'button', text: 'Now', onclick: () => { cap.value = toLocalInput(QL.isoLocal()); } })),
+        h('span', { class: 'hint', text: isNew ? 'Leave empty to use the moment you save.' : 'When you first saved it, in your own time zone.' })),
+      cur ? h('p', { class: 'hint', text: `ID ${cur.id}${(cur.legacy_ids || []).length ? ' · legacy ' + cur.legacy_ids.join(', ') : ''}. Fields from other apps are kept unchanged.` }) : null));
+  if (!isNew && (orig.note || '')) more.open = true;
+  if (isNew && (P.note)) more.open = true;
+  function collect() {
+    const keep = (inputVal, o) => inputVal === nl(o || '') ? (o || '') : inputVal;
+    const text = isNew ? ta.value.replace(/^\s+|\s+$/g, '') : keep(ta.value, orig.text);
+    const av = author.value === (orig.author || '') ? (orig.author || '') : author.value.trim();
+    const sv = source.value === (orig.source || '') ? (orig.source || '') : source.value.trim();
+    const nv = keep(note.value, orig.note);
+    const tg = tags.get();
+    let capV;
+    if (cap.value === capInit) capV = cur ? cur.captured_at : null;
+    else capV = cap.value ? QL.isoLocal(new Date(cap.value)) : null;
+    return { text, author: av, source: sv, note: nv, tags: QL.deepEq(tg, orig.tags || []) && cur ? cur.tags : tg, captured_at: capV };
+  }
+  function save(another) {
+    const v = collect();
+    if (!v.text.trim()) { err.textContent = 'The quote text is empty.'; ta.focus(); return false; }
+    if (isNew) {
+      const now = QL.isoLocal();
+      const rec = { id: QL.newId(), text: v.text, author: v.author, source: v.source, note: v.note, tags: v.tags, captured_at: v.captured_at || now, created_at: now, updated_at: now, legacy_ids: [] };
+      putQuote(rec);
+      remember('capture', [{ id: rec.id, before: null }]);
+      logEvent('edit', 'Captured a quote.');
+      requestPersist();
+      changed();
+      toast('Saved to your library.', { undo: true, action: { label: 'Open', fn: () => openReader(rec.id) } });
+      if (another) setTimeout(() => openEditor(), 30);
+      return true;
+    }
+    const before = QL.clone(cur);
+    const r = editQuote(id, x => {
+      x.text = v.text; x.author = v.author; x.source = v.source; x.note = v.note; x.tags = v.tags;
+      if (v.captured_at != null) x.captured_at = v.captured_at;
+    });
+    if (r) { remember('edit', [{ id, before }]); logEvent('edit', 'Edited a quote.'); changed(); toast('Saved.', { undo: true }); }
+    return true;
+  }
+  const m = modal({
+    title: isNew ? 'Capture' : 'Edit quote', wide: !isNew, sticky: true,
+    body: [dup, h('label', { class: 'field' }, h('span', { text: 'Quote' }), ta), err,
+      h('div', { class: 'row2' }, h('label', { class: 'field' }, h('span', { text: 'Author' }), author), h('label', { class: 'field' }, h('span', { text: 'Source' }), source)),
+      h('div', { class: 'field' }, h('span', { text: 'Tags' }), tags.el), more, authors, sources],
+    footNote: 'Ctrl+Enter saves',
+    actions: [{ label: 'Cancel' }].concat(isNew ? [{ label: 'Save and capture another', act: () => save(true) }] : [], [{ label: 'Save', primary: true, act: () => save(false) }]),
+  });
+  m.el.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (save(false) !== false) m.close(); } });
+  if (P.text) checkDup();
+  return m;
+}
+let persistAsked = false;
+function requestPersist() {   // ask the browser not to clear this site's storage when the disk runs low
+  if (persistAsked || !navigator.storage || !navigator.storage.persist) return;
+  persistAsked = true;
+  navigator.storage.persist().then(ok => logEvent('save', ok ? 'Browser storage marked as persistent.' : 'Browser kept storage as best-effort.')).catch(() => { });
+}
+
+/* ---------- conflicts: same field changed on both PCs ---------- */
+const FIELD_LABEL = { text: 'Quote text', author: 'Author', source: 'Source', note: 'Note', tags: 'Tags', captured_at: 'Capture date', deleted_at: 'Trash', legacy_ids: 'Legacy IDs', legacy_source: 'Legacy source' };
+function showVal(k, v) {
+  if (v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length)) return h('span', { class: 'val empty', text: k === 'deleted_at' ? 'In the library' : '(empty)' });
+  if (k === 'deleted_at') return h('span', { class: 'val', text: 'In Trash since ' + fmtDateTime(v) });
+  if (k === 'captured_at') return h('span', { class: 'val', text: fmtDateTime(v) });
+  if (Array.isArray(v)) return h('span', { class: 'val', text: v.join(', ') });
+  if (typeof v === 'object') return h('span', { class: 'val', text: JSON.stringify(v) });
+  return h('span', { class: 'val', text: String(v) });
+}
+function openConflicts() {
+  const ids = Object.keys(App.sync.conflicts).filter(id => App.quotes.has(id));
+  for (const id of Object.keys(App.sync.conflicts)) if (!App.quotes.has(id)) delete App.sync.conflicts[id];
+  if (!ids.length) { updatePill(); toast('No conflicts to resolve.'); return; }
+  const id = ids[0], c = App.sync.conflicts[id], cur = App.quotes.get(id);
+  const picks = {};
+  const fields = c.fields.map(f => {
+    picks[f] = 'mine';
+    const name = 'cf-' + f;
+    const opt = (side, who, val) => h('label', { class: 'copt' }, h('input', { type: 'radio', name, value: side, checked: side === 'mine', onchange: () => { picks[f] = side; } }),
+      h('span', {}, h('span', { class: 'who', text: who }), showVal(f, val)));
+    return h('div', { class: 'cfield' }, h('h4', { text: FIELD_LABEL[f] || f }),
+      opt('mine', 'This PC · ' + App.sync.device, c.mine[f]),
+      opt('theirs', (c.device || 'The other PC') + ' · synced ' + ago(c.at), c.theirs[f]));
+  });
+  const finish = (rec) => {
+    App.quotes.set(id, rec); delete App.sync.conflicts[id]; App.sync.dirty[id] = 1;
+    changed();
+    if (Object.keys(App.sync.conflicts).length) setTimeout(openConflicts, 50);
+  };
+  modal({
+    title: 'Changed on both PCs' + (ids.length > 1 ? ` (1 of ${ids.length})` : ''), wide: true, sticky: true,
+    body: [h('p', { class: 'mtext' }, 'This quote was edited on this PC and on ', h('b', { text: c.device || 'the other PC' }), ' before they synced. Changes to other fields were merged already. Choose which version to keep for each field below.'),
+      h('div', { class: 'qtext', style: { fontSize: '15px', color: 'var(--muted)', margin: '0 0 14px', maxHeight: '4.5em', overflow: 'hidden' }, text: cur.text }),
+      fields],
+    actions: [
+      { label: 'Decide later' },
+      { label: 'Keep both as separate quotes', act: () => {
+        const theirs = QL.clone(cur), mine = QL.clone(cur), now = QL.isoLocal();
+        for (const f of c.fields) { if (c.theirs[f] === undefined) delete theirs[f]; else theirs[f] = QL.clone(c.theirs[f]); if (c.mine[f] === undefined) delete mine[f]; else mine[f] = QL.clone(c.mine[f]); }
+        theirs.updated_at = now;
+        Object.assign(mine, { id: QL.newId(), created_at: now, updated_at: now, legacy_ids: [] });
+        putQuote(mine);
+        logEvent('sync', 'Conflict kept as two quotes.');
+        finish(theirs);
+        toast('Both versions kept. This PC’s version is a new quote.');
+      } },
+      { label: 'Keep my choices', primary: true, act: () => {
+        const rec = QL.clone(cur);
+        for (const f of c.fields) { const v = (picks[f] === 'mine' ? c.mine : c.theirs)[f]; if (v === undefined) delete rec[f]; else rec[f] = QL.clone(v); }
+        rec.updated_at = QL.isoLocal();
+        logEvent('sync', `Conflict resolved (${c.fields.map(f => `${f}: ${picks[f] === 'mine' ? 'this PC' : 'other PC'}`).join(', ')}).`);
+        finish(rec);
+        toast('Resolved. Syncing your choice to the other PC.');
+      } },
+    ],
+  });
+}
+
+/* ============ Settings: Drive sync, backups, import/export, capture tool, activity, display ============ */
+const KIND_LABEL = { flow: 'Flow snapshot', quotes: 'Quotes export', ikes: 'Ikes export' };
+const SETTINGS_TABS = [['sync', 'Drive sync'], ['backups', 'Backups'], ['data', 'Import & export'], ['capture', 'Capture tool'], ['activity', 'Activity'], ['display', 'Display']];
+let settingsTab = 'sync';
+function openSettings(tab) {
+  if (tab) settingsTab = tab;
+  const body = h('div');
+  const tabs = h('div', { class: 'tabs', role: 'tablist' });
+  const draw = () => {
+    tabs.replaceChildren(...SETTINGS_TABS.map(([k, label]) => h('button', { role: 'tab', class: k === settingsTab ? 'on' : '', 'aria-selected': String(k === settingsTab), text: label, onclick: () => { settingsTab = k; draw(); } })));
+    body.replaceChildren(({ sync: paneSync, backups: paneBackups, data: paneData, capture: paneCapture, activity: paneActivity, display: paneDisplay })[settingsTab](draw));
+  };
+  draw();
+  const m = modal({ title: 'Settings', wide: true, tabs, body, actions: [{ label: 'Close' }] });
+  settingsRedraw = () => { if (document.body.contains(m.el)) draw(); };
+  return m;
+}
+let settingsRedraw = () => { };
+
+/* ---------- Drive sync ---------- */
+function paneSync(redraw) {
+  const S = App.sync, ready = syncReady(), srv = S.server || {};
+  const url = h('input', { class: 'inp', placeholder: 'https://script.google.com/macros/s/…/exec', spellcheck: 'false', 'aria-label': 'Web app link' }); url.value = S.url;
+  const key = h('input', { class: 'inp', type: 'password', autocomplete: 'off', spellcheck: 'false', 'aria-label': 'Sync key' }); key.value = S.key;
+  const dev = h('input', { class: 'inp', 'aria-label': 'This PC’s name' }); dev.value = S.device;
+  const msg = h('p', { class: 'hint', role: 'status' });
+  const fileLink = h('span', { text: 'My Drive › 00_Apps › Quotes › quotes-sync.json' });
+  const where = h('div', { class: 'box' }, h('h4', { text: 'Where your quotes are saved' }),
+    h('dl', { class: 'kv' },
+      h('dt', { text: 'This PC' }), h('dd', { text: `In this browser, on “${S.device}”. ${plural(live().length, 'quote')} in the library${trashed().length ? ', ' + trashed().length + ' in Trash' : ''}.` }),
+      h('dt', { text: 'Shared copy' }), h('dd', {}, ready ? fileLink : 'Not connected. Quotes stay on this PC only.'),
+      ready ? [h('dt', { text: 'Status' }), h('dd', { text: $('#sync-pill').textContent + (Sync.err ? ' — ' + syncErrText(Sync.err, Sync.detail) : '') })] : null,
+      ready ? [h('dt', { text: 'Last sync' }), h('dd', { text: S.lastSync ? fmtDateTime(S.lastSync) + ` (${ago(S.lastSync)})` : 'Not yet' })] : null,
+      ready && srv.count != null ? [h('dt', { text: 'Drive copy' }), h('dd', { text: `${plural(srv.count, 'quote')}${srv.savedAt ? `, last written ${fmtDateTime(srv.savedAt)}${srv.savedBy ? ' by ' + srv.savedBy : ''}` : ''}` })] : null,
+      ready ? [h('dt', { text: 'Last Drive backup' }), h('dd', { text: srv.lastBackupAt ? fmtDateTime(srv.lastBackupAt) : 'None yet (made automatically before changes, at most daily)' })] : null,
+      ready && pendingCount() ? [h('dt', { text: 'Waiting to sync' }), h('dd', { text: plural(pendingCount(), 'change') })] : null));
+  if (ready) syncCall({ op: 'info', key: S.key }).then(o => {
+    if (o.fileUrl) fileLink.replaceChildren('My Drive › 00_Apps › Quotes › ', h('a', { href: o.fileUrl, target: '_blank', rel: 'noopener', text: 'quotes-sync.json' }));
+    S.server = Object.assign(S.server || {}, { count: o.count, savedAt: o.savedAt, savedBy: o.savedBy, lastBackupAt: o.lastBackupAt });
+  }).catch(() => { });
+  const connect = async () => {
+    const u = url.value.trim(), k = key.value.trim(), d = dev.value.trim() || S.device;
+    const bad = t => { msg.textContent = t; msg.className = 'hint bad'; };
+    if (!validScriptUrl(u)) return bad('That isn’t an Apps Script Web app link. It starts with https://script.google.com/macros/s/ and ends with /exec.');
+    if (k.length < 16) return bad('The key looks too short. Copy the whole key from the script’s Execution log.');
+    msg.className = 'hint'; msg.textContent = 'Checking the link…';
+    try { const p = await syncCall({ op: 'ping', key: k }, u); if (p.app !== 'quotes-sync') return bad('That link answers, but it isn’t the Quotes sync script (it may be the Linework one). Use the Quotes script’s link.'); }
+    catch (e) { return bad(e.code === 'bad_key' ? 'The script refused that key. Check you copied all of it.' : 'Couldn’t connect: ' + syncErrText(e.code, e.detail) + '.'); }
+    msg.textContent = 'Connected. Syncing…';
+    if (u === S.url && k === S.key) { S.device = d; await saveNow(); await syncNow(true); }
+    else await applySync(u, k, d);
+    msg.textContent = Sync.err ? 'Connected, but the sync failed: ' + syncErrText(Sync.err, Sync.detail) + '.' : 'Connected and synced.';
+    msg.className = Sync.err ? 'hint bad' : 'hint ok';
+    setTimeout(redraw, 900);
+  };
+  const steps = h('details', { class: 'box', open: !ready }, h('summary', { style: { cursor: 'pointer', fontWeight: 600 }, text: 'First time: set up the Quotes sync script (about 5 minutes, once)' }),
+    h('ol', { class: 'steps' },
+      h('li', {}, 'Open ', h('a', { href: 'https://script.google.com/create', target: '_blank', rel: 'noopener', text: 'script.google.com/create' }), ' (signed in to the Google account whose Drive should hold your quotes). Name the project “Quotes sync”.'),
+      h('li', {}, 'Replace everything in the editor with the script: ', h('button', { class: 'btn sm', type: 'button', icon: 'copy', onclick: () => copyText(SYNC_SCRIPT, 'Script copied. Paste it into the Apps Script editor.') }, 'Copy script'), ' then save (Ctrl+S).'),
+      h('li', { text: 'Choose “setup” in the function list, press Run, and allow access when Google asks. Copy the sync key from the Execution log.' }),
+      h('li', { text: 'Deploy › New deployment › type Web app. Execute as: Me. Who has access: Anyone. Deploy, then copy the Web app link.' }),
+      h('li', { text: 'Paste the link and key below and press Connect. On your other PC, use “Copy setup link” instead of repeating these steps.' })),
+    h('p', { class: 'hint', text: 'This is a separate script from Linework’s, so quotes live in their own file: My Drive › 00_Apps › Quotes. “Anyone” means anyone with the link and the key; without the key the script refuses every request.' }));
+  return h('div', {}, where,
+    h('label', { class: 'field' }, h('span', { text: 'Web app link from your Quotes sync script' }), url),
+    h('div', { class: 'row2' }, h('label', { class: 'field' }, h('span', { text: 'Sync key' }), key), h('label', { class: 'field' }, h('span', { text: 'This PC’s name (shown when both PCs edit the same quote)' }), dev)),
+    msg,
+    h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '4px 0 14px' } },
+      h('button', { class: 'btn primary', icon: ready ? 'sync' : 'link', onclick: connect }, ready ? 'Save and sync now' : 'Connect'),
+      ready ? h('button', { class: 'btn', icon: 'copy', onclick: () => copyText(setupLink(), 'Setup link copied. Open it in Brave on your other PC.') }, 'Copy setup link for the other PC') : null,
+      ready ? h('button', { class: 'btn ghost danger', onclick: async () => { if (await confirmBox('Turn off sync on this PC?', 'Quotes on this PC stay here. The Drive copy and the other PC are not changed.', 'Turn off')) { turnOffSync(); redraw(); } } }, 'Turn off on this PC') : null),
+    ready ? h('p', { class: 'hint', text: 'The setup link contains your sync key: anyone who has it can read and change your synced quotes. Send it only to yourself.' }) : null,
+    steps);
+}
+
+/* ---------- Backups ---------- */
+function paneBackups(redraw) {
+  const drive = h('div'), local = h('div');
+  const loadDrive = async () => {
+    drive.replaceChildren(h('p', { class: 'hint', text: 'Loading Drive backups…' }));
+    try {
+      const list = await driveBackups();
+      if (!list.length) { drive.replaceChildren(h('p', { class: 'hint', text: 'No Drive backups yet. One is made automatically before the first change of each day and before every import.' })); return; }
+      drive.replaceChildren(h('table', { class: 'tbl' }, h('tr', {}, h('th', { text: 'Made' }), h('th', { text: 'Why' }), h('th', { text: 'Size' }), h('th')),
+        list.slice(0, 40).map(b => {
+          const why = (/_([A-Za-z-]+)\.json$/.exec(b.name) || [])[1] || '';
+          return h('tr', {}, h('td', { text: fmtDateTime(b.created) }), h('td', { text: why.replace(/-/g, ' ') }), h('td', { text: Math.max(1, Math.round(b.size / 1024)) + ' KB' }),
+            h('td', {}, h('button', { class: 'btn sm', icon: 'restore', onclick: async () => {
+              if (!await confirmBox('Restore this Drive backup?', `Your Drive copy goes back to how it was on ${fmtDateTime(b.created)}. The current Drive copy is backed up first; quotes added since then move to Trash rather than being deleted. Both PCs pick this up on their next sync.`, 'Restore')) return;
+              try { const o = await driveRestore(b); toast(`Restored: ${o.restored} quotes put back, ${o.trashed} newer ones moved to Trash.`, { ms: 9000 }); redraw(); }
+              catch (e) { toast('Restore failed: ' + syncErrText(e.code, e.detail) + '.', { ms: 9000 }); }
+            } }, 'Restore')));
+        })));
+    } catch (e) { drive.replaceChildren(h('p', { class: 'hint bad', text: 'Couldn’t list Drive backups: ' + syncErrText(e.code, e.detail) + '.' })); }
+  };
+  if (syncReady()) loadDrive(); else drive.replaceChildren(h('p', { class: 'hint', text: 'Connect Drive sync to keep backups in Drive.' }));
+  listLocalBackups().then(list => {
+    if (!list.length) { local.replaceChildren(h('p', { class: 'hint', text: 'None yet. One is saved here before every import, restore or Empty Trash.' })); return; }
+    local.replaceChildren(h('table', { class: 'tbl' }, h('tr', {}, h('th', { text: 'Made' }), h('th', { text: 'Why' }), h('th', { text: 'Quotes' }), h('th')),
+      list.map(b => h('tr', {}, h('td', { text: fmtDateTime(b.at) }), h('td', { text: b.reason }), h('td', { class: 'n', text: b.count }),
+        h('td', { style: { whiteSpace: 'nowrap' } },
+          h('button', { class: 'btn sm', icon: 'restore', onclick: async () => { if (await confirmBox('Restore this backup?', `The library goes back to these ${b.count} quotes. Quotes added since then move to Trash. Your current library is backed up first.`, 'Restore')) { await restoreLocal(b.key); redraw(); } } }, 'Restore'), ' ',
+          h('button', { class: 'btn sm ghost', icon: 'download', title: 'Download as a Quotes export', onclick: async () => { const x = await Store.get(b.key); download(`quotes-backup-${dayKey(new Date(b.at))}.json`, JSON.stringify(QL.exportDoc(x.quotes, { backup_reason: b.reason }), null, 1)); } }))))));
+  });
+  return h('div', {},
+    h('div', { class: 'box' }, h('h4', { text: 'In Google Drive (shared by both PCs)' }), h('p', { class: 'hint', text: 'My Drive › 00_Apps › Quotes › backups. Newest 40 kept; older ones go to Drive’s Trash.' }), drive,
+      syncReady() ? h('button', { class: 'btn sm ghost', style: { marginTop: '6px' }, icon: 'sync', onclick: loadDrive }, 'Refresh') : null),
+    h('div', { class: 'box' }, h('h4', { text: 'On this PC' }), h('p', { class: 'hint', text: 'Kept in this browser; newest 12.' }), local),
+    h('button', { class: 'btn', icon: 'download', onclick: exportNow }, 'Download a full export now'));
+}
+async function restoreLocal(key) {
+  const b = await Store.get(key); if (!b) return;
+  await flush();
+  await localBackup('before restoring a backup');
+  const ids = new Set(), befores = [], now = QL.isoLocal();
+  for (const r of b.quotes) {
+    ids.add(r.id);
+    const cur = App.quotes.get(r.id);
+    if (cur && QL.deepEq(cur, r)) continue;
+    befores.push({ id: r.id, before: QL.clone(cur) || null });
+    const rec = QL.clone(r);
+    if (cur || App.sync.base[r.id] !== undefined) rec.updated_at = now;
+    putQuote(rec);
+  }
+  for (const q of live()) if (!ids.has(q.id)) { befores.push({ id: q.id, before: QL.clone(q) }); editQuote(q.id, x => { x.deleted_at = now; }); }
+  remember('restore backup', befores);
+  logEvent('backup', `Restored a backup from ${fmtDateTime(b.at)} (${b.count} quotes).`);
+  changed();
+  toast('Backup restored.', { undo: true });
+}
+
+/* ---------- Import, export, verify ---------- */
+function pickImportFile(mode) {
+  const f = $('#file-in'); f.value = ''; f.dataset.mode = mode || 'import'; f.click();
+}
+async function readJsonFile(file) {
+  if (file.size > 50 * 1024 * 1024) throw new Error('That file is over 50 MB.');
+  const text = await file.text();
+  try { return JSON.parse(text.replace(/^﻿/, '')); } catch (e) { throw new Error('That file isn’t valid JSON.'); }
+}
+async function onFile(file, mode) {
+  let doc;
+  try { doc = await readJsonFile(file); } catch (e) { toast(e.message); return; }
+  const parsed = QL.parseImport(doc);
+  if (mode === 'verify') return showVerify(parsed, file.name);
+  if (!parsed.kind) { modal({ title: 'Can’t import this file', body: h('p', { class: 'mtext', text: 'Quotes reads a Flow snapshot (an object with a “quotes” list), a Quotes export, or an Ikes export (an object with an “ideas” list). This file is none of those.' }), actions: [{ label: 'Close' }] }); return; }
+  previewImport(parsed, QL.planImport(App.quotes, parsed), file.name);
+}
+function previewImport(parsed, plan, name) {
+  const rows = [
+    ['New quotes to add', plan.adds.length],
+    ['Newer in the file (will update yours)', plan.updates.length],
+    ['Same text as a quote you have (merged: ID and tags added)', plan.merges.length],
+    ['Already here and identical (skipped)', plan.same],
+    ['Already imported from Ikes before (skipped)', plan.legacyMatch],
+    ['Newer here than in the file (kept yours)', plan.localNewer],
+    ['Repeated inside the file (counted once)', plan.dupInFile],
+    ['Unreadable entries (skipped)', plan.invalid],
+  ];
+  const n = plan.adds.length + plan.updates.length + plan.merges.length;
+  const mergeList = plan.merges.length ? h('details', { class: 'details' }, h('summary', { text: `What the ${plural(plan.merges.length, 'merge')} change` }),
+    h('ul', { style: { paddingLeft: '18px' } }, plan.merges.slice(0, 50).map(m => h('li', { style: { marginBottom: '4px' } }, h('span', { style: { fontFamily: 'var(--font-quote)' }, text: '“' + m.preview + (m.preview.length >= 80 ? '…' : '') + '”' }), ' — ',
+      [m.addTags.length ? 'adds tag ' + m.addTags.join(', ') : '', m.addLegacy.length ? 'records Ikes ID ' + m.addLegacy.join(', ') : ''].filter(Boolean).join('; '))))) : null;
+  modal({
+    title: 'Import preview', wide: true,
+    body: [h('p', { class: 'mtext' }, h('b', { text: name }), ` · ${KIND_LABEL[parsed.kind]} · ${plural(plan.total, 'entry', 'entries')}. Nothing has changed yet.`),
+      h('table', { class: 'tbl' }, rows.map(([l, v]) => h('tr', { class: v ? '' : 'zero' }, h('td', { text: l }), h('td', { class: 'n', text: v })))),
+      plan.textTwins ? h('p', { class: 'hint warn', text: `${plural(plan.textTwins, 'new entry', 'new entries')} ${plan.textTwins === 1 ? 'has' : 'have'} the same text as a quote you already have, but a different ID. ${plan.textTwins === 1 ? 'It is' : 'They are'} imported as separate quotes so every ID is kept.` }) : null,
+      mergeList,
+      h('p', { class: 'hint', text: n ? 'Before importing, the whole library is backed up on this PC, and the Drive copy is backed up before these changes reach it. Every imported ID and field is checked after saving.' : 'There is nothing new in this file.' })],
+    actions: n ? [{ label: 'Cancel' }, { label: `Import ${n}`, primary: true, act: () => { runImport(parsed, plan, name); return true; } }] : [{ label: 'Close' }],
+  });
+}
+async function runImport(parsed, plan, name) {
+  await flush();
+  await localBackup('before import of ' + name);
+  const { changes, audit } = QL.applyPlan(App.quotes, plan, { file: name });
+  for (const c of changes) putQuote(c.after);
+  remember('import', changes.map(c => ({ id: c.id, before: c.before })));
+  App.audit.unshift(audit);
+  logEvent('import', `Imported ${name}: ${audit.added} added, ${audit.updated} updated, ${audit.merged} merged, ${audit.unchanged + audit.already_imported} already here.`);
+  if (syncReady()) Sync.backupLabel = 'before-import';
+  App.index = null;
+  await saveNow();
+  requestPersist();
+  // Check against what was actually written to storage, not what is in memory.
+  let rep, scope;
+  try {
+    const stored = await Store.get('state');
+    const map = new Map(((stored && stored.quotes) || []).map(q => [q.id, q]));
+    if (parsed.kind === 'flow' || parsed.kind === 'quotes') {
+      const skipped = new Set(); for (const it of parsed.items) { const c = App.quotes.get(it && it.id); if (c && !QL.deepEq(c, it) && !changes.some(x => x.id === it.id)) skipped.add(it.id); }
+      rep = QL.verify(parsed.items.filter(it => it && !skipped.has(it.id)), id => map.get(id)); scope = 'from the file';
+    } else {
+      rep = QL.verify(changes.map(c => c.after), id => map.get(id)); scope = 'imported or merged';
+    }
+  } catch (e) { rep = null; }
+  render();
+  syncSoon(600);
+  const verdict = rep ? (rep.ok ? `Checked after saving: ${rep.present} of ${rep.total} IDs ${scope} are stored, and every field matches.` : `Check after saving found problems: ${rep.missing.length} missing, ${rep.differing.length} with different fields.`) : 'Couldn’t read storage back to check the import.';
+  logEvent(rep && rep.ok ? 'import' : 'error', verdict);
+  modal({ title: 'Import finished', body: [h('p', { class: 'mtext', text: `${audit.added} added, ${audit.updated} updated, ${audit.merged} merged.` }),
+    h('p', { class: 'mtext ' + (rep && rep.ok ? '' : 'hint bad'), text: verdict }),
+    rep && !rep.ok ? h('div', { class: 'loglist', text: [...rep.missing.map(id => 'missing ' + id), ...rep.differing.map(d => d.id + ': ' + d.fields.join(', '))].slice(0, 100).join('\n') }) : null,
+    h('p', { class: 'hint', text: syncReady() ? 'Sending to Drive now; your other PC picks it up on its next sync.' : 'Connect Drive sync (Settings) to use these on your other PC.' })],
+    actions: [{ label: 'Undo import', act: () => { undo(); return true; } }, { label: 'Done', primary: true }] });
+}
+function showVerify(parsed, name) {
+  if (parsed.kind !== 'flow' && parsed.kind !== 'quotes') { toast('Checking works with a Flow snapshot or a Quotes export.'); return; }
+  const rep = QL.verify(parsed.items, id => App.quotes.get(id));
+  logEvent('verify', `Checked against ${name}: ${rep.present} of ${rep.total} IDs present, ${rep.differing.length} with differences.`);
+  modal({ title: 'Check against ' + name, wide: true, body: [
+    h('p', { class: 'mtext ' + (rep.ok ? 'hint ok' : ''), text: rep.ok ? `All ${rep.total} IDs are here, and every field matches the file exactly.` : `${rep.present} of ${rep.total} IDs are here. ${rep.missing.length} missing, ${rep.differing.length} with different fields.` }),
+    !rep.ok ? h('p', { class: 'hint', text: 'Differences are expected for quotes you have edited since that file was made.' }) : null,
+    !rep.ok ? h('div', { class: 'loglist', text: [...rep.missing.map(id => 'missing  ' + id), ...rep.differing.map(d => 'differs  ' + d.id + '  (' + d.fields.join(', ') + ')')].slice(0, 300).join('\n') }) : null],
+    actions: [{ label: 'Close' }] });
+}
+function exportNow() {
+  const all = [...App.quotes.values()];
+  const doc = QL.exportDoc(all, { exported_by: App.sync.device, import_log: App.audit.slice(0, 50) });
+  download(`quotes-export-${dayKey()}.json`, JSON.stringify(doc, null, 1));
+  logEvent('export', `Exported ${plural(all.length, 'quote')} (${trashed().length} in Trash).`);
+  toast(`Exported ${plural(all.length, 'quote')}. Re-importing this file adds nothing twice.`);
+}
+function paneData() {
+  return h('div', {},
+    h('div', { class: 'box' }, h('h4', { text: 'Import' }),
+      h('p', { class: 'hint', text: 'Flow snapshot (flow_quotes.json), a Quotes export, or an Ikes export. You see a preview with counts before anything changes, and can run the same file again safely: matching IDs, earlier Ikes IDs and identical text are never added twice. You can also drop a file onto the window.' }),
+      h('button', { class: 'btn primary', icon: 'upload', onclick: () => pickImportFile() }, 'Choose a file to import')),
+    h('div', { class: 'box' }, h('h4', { text: 'Export' }),
+      h('p', { class: 'hint', text: 'Every quote with every field, including Trash and fields from other apps, in the same layout as a Flow snapshot.' }),
+      h('button', { class: 'btn', icon: 'download', onclick: exportNow }, 'Download export')),
+    h('div', { class: 'box' }, h('h4', { text: 'Check against a snapshot' }),
+      h('p', { class: 'hint', text: 'Compares every ID and every field in a Flow snapshot or export with what is stored here.' }),
+      h('button', { class: 'btn', icon: 'check', onclick: () => pickImportFile('verify') }, 'Choose a file to check')),
+    h('div', { class: 'box' }, h('h4', { text: 'Import log' }),
+      App.audit.length ? h('table', { class: 'tbl' }, h('tr', {}, h('th', { text: 'When' }), h('th', { text: 'File' }), h('th', { text: 'Added' }), h('th', { text: 'Merged' }), h('th', { text: 'Skipped' })),
+        App.audit.slice(0, 12).map(a => h('tr', {}, h('td', { text: fmtDateTime(a.at) }), h('td', { text: a.file }), h('td', { class: 'n', text: a.added + (a.updated ? ` +${a.updated} upd` : '') }), h('td', { class: 'n', text: a.merged }), h('td', { class: 'n', text: a.unchanged + a.already_imported + a.kept_local_newer + a.skipped_invalid })))) : h('p', { class: 'hint', text: 'No imports yet.' }),
+      App.audit.length ? h('button', { class: 'btn sm ghost', style: { marginTop: '8px' }, icon: 'download', onclick: () => download(`quotes-import-log-${dayKey()}.json`, JSON.stringify(App.audit, null, 1)) }, 'Download full log with every merge') : null));
+}
+
+/* ---------- capture bookmarklet ---------- */
+function bookmarkletCode(appUrl) {
+  return 'javascript:(()=>{const s=String(window.getSelection?getSelection():\'\').trim();const d={t:s,u:location.href,ti:document.title};window.open(' + JSON.stringify(appUrl + '#capture=') + '+encodeURIComponent(JSON.stringify(d)),\'_blank\');})();';
+}
+function paneCapture() {
+  const web = /^https?:$/.test(location.protocol);
+  const appUrl = location.origin + location.pathname;
+  const code = bookmarkletCode(appUrl);
+  const link = h('a', { class: 'bm', href: code, title: 'Drag me to the bookmarks bar', onclick: e => { e.preventDefault(); toast('Drag this button onto your bookmarks bar.'); } }, h('span', { icon: 'plus' }), 'Quote it');
+  return h('div', {},
+    h('p', { class: 'mtext', text: 'Save a quote from any web page in two clicks: highlight the words, click the bookmark. Quotes opens with the text filled in and the page as the source, ready to tag and save.' }),
+    web ? h('div', { class: 'box', style: { textAlign: 'center', padding: '22px' } }, link,
+      h('p', { class: 'hint', text: 'Drag this button onto the Brave bookmarks bar (Ctrl+Shift+B shows the bar). Do it once on each PC.' })) :
+      h('p', { class: 'hint warn', text: 'The capture bookmark needs the web address of Quotes. Open Quotes from its web link, then come back here.' }),
+    h('details', { class: 'details' }, h('summary', { text: 'Add it by hand instead' }),
+      h('ol', { class: 'steps' }, h('li', { text: 'Right-click the bookmarks bar › Add page.' }), h('li', { text: 'Name: Quote it. URL: paste the code below.' })),
+      h('div', { style: { display: 'flex', gap: '8px' } }, h('input', { class: 'inp', readonly: true, value: code, onfocus: e => e.target.select() }), h('button', { class: 'btn', icon: 'copy', onclick: () => copyText(code, 'Bookmark code copied.') }, 'Copy'))),
+    h('p', { class: 'hint', text: 'Pages that block pop-ups may ask once to allow it. Nothing is sent anywhere except to Quotes in your own browser.' }));
+}
+function readCaptureHash() {
+  const m = /^#capture=(.*)$/.exec(location.hash || '');
+  if (!m) return null;
+  let o = null;
+  try { o = JSON.parse(decodeURIComponent(m[1])); } catch (e) { }
+  try { history.replaceState(null, '', location.pathname + location.search + '#' + App.view); } catch (e) { }
+  if (!o || typeof o !== 'object') return null;
+  const title = String(o.ti || '').trim().slice(0, 300), url = String(o.u || '').slice(0, 2000);
+  return { text: String(o.t || '').slice(0, 20000), source: title && url ? `${title} — ${url}` : (title || url) };
+}
+
+/* ---------- activity, display ---------- */
+function paneActivity() {
+  const lines = App.log.map(e => `${fmtDateTime(e.at)}  ${e.kind.padEnd(7)} ${e.msg}`);
+  return h('div', {},
+    h('p', { class: 'hint', text: 'What happened on this PC: syncs, merges, imports, backups and problems. Newest first; last 300 kept.' }),
+    h('div', { class: 'loglist', text: lines.join('\n') || 'Nothing yet.' }),
+    h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px' } },
+      h('button', { class: 'btn sm', icon: 'download', onclick: () => download(`quotes-activity-${dayKey()}.txt`, lines.join('\r\n'), 'text/plain') }, 'Download log'),
+      h('button', { class: 'btn sm ghost', icon: 'sync', disabled: !syncReady(), onclick: () => syncNow(true) }, 'Sync now')));
+}
+let installPrompt = null;
+function paneDisplay(redraw) {
+  const seg = (vals, cur, set) => h('div', { class: 'seg' }, vals.map(([v, l]) => h('button', { class: v === cur ? 'on' : '', text: l, onclick: () => { set(v); saveUI(); redraw(); } })));
+  const tags = QL.tagCounts(live());
+  return h('div', {},
+    h('div', { class: 'field' }, h('span', { text: 'Appearance' }), seg([['auto', 'Match Windows'], ['light', 'Light'], ['dark', 'Dark']], App.ui.theme, v => { App.ui.theme = v; applyTheme(); })),
+    h('div', { class: 'field' }, h('span', { text: 'Quotes in each day’s Discover' }), seg([[3, '3'], [5, '5'], [7, '7']], App.ui.dailyN, v => { App.ui.dailyN = v; if (App.ui.daily) App.ui.daily.day = ''; render(); })),
+    h('div', { class: 'field' }, h('span', { text: 'Leave these tags out of Discover (still searchable)' }),
+      h('div', { class: 'tags', style: { marginTop: '2px' } }, tags.map(([t, n]) => {
+        const on = App.ui.excludeTags.includes(t);
+        return h('button', { class: 'tag' + (on ? ' on' : ''), 'aria-pressed': String(on), text: `${t} ${n}`, onclick: () => { App.ui.excludeTags = on ? App.ui.excludeTags.filter(x => x !== t) : App.ui.excludeTags.concat(t); if (App.ui.daily) App.ui.daily.day = ''; saveUI(); render(); redraw(); } });
+      }))),
+    h('div', { class: 'field' }, h('span', { text: 'Discover history on this PC' }),
+      h('div', {}, h('span', { class: 'hint', text: `${Object.keys(App.ui.hist).length} quotes shown so far. ` }),
+        h('button', { class: 'btn sm', onclick: async () => { if (await confirmBox('Reset Discover history?', 'Discover forgets what it has shown on this PC and starts the rotation again.', 'Reset')) { App.ui.hist = {}; App.ui.recent = []; App.ui.daily = null; saveUI(); render(); redraw(); } } }, 'Reset'))),
+    installPrompt ? h('div', { class: 'field' }, h('span', { text: 'App window' }), h('div', {}, h('button', { class: 'btn sm', onclick: async () => { installPrompt.prompt(); installPrompt = null; redraw(); } }, 'Install Quotes as an app'))) : null,
+    h('div', { class: 'field' }, h('span', { text: 'Keyboard' }),
+      h('table', { class: 'tbl' }, [['N', 'Capture'], ['/', 'Search'], ['D / L', 'Discover / Library'], ['→ or Space, ←', 'Next, previous in Discover'], ['S', 'Shuffle'], ['R', 'Random from the current list'], ['C, E', 'Copy, edit the quote on show'], ['Del', 'Move the open quote to Trash'], ['Esc', 'Close']]
+        .map(([k, v]) => h('tr', {}, h('td', {}, h('kbd', { text: k })), h('td', { text: v }))))));
+}
+function applyTheme() { const t = App.ui.theme; if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = t; }
+
+/* ============ Boot ============ */
+/* One tab is in charge at a time, so two tabs can never overwrite each other's saves. */
+let releaseLock = null;
+function holdLock(wait) {
+  return new Promise(res => {
+    if (!navigator.locks || !navigator.locks.request) return res(true);
+    const cb = lock => { if (!lock) { res(false); return; } res(true); return new Promise(r => { releaseLock = r; }); };
+    if (wait) { navigator.locks.request('quotes-main', cb); return; }
+    // A reloading tab: the page being replaced may still hold the lock for a moment, so wait briefly.
+    let signal; try { signal = AbortSignal.timeout(1500); } catch (e) { signal = undefined; }
+    navigator.locks.request('quotes-main', signal ? { signal } : { ifAvailable: true }, cb).catch(() => res(false));
+  });
+}
+function showElsewhere(text, btn, fn) {
+  const el = $('#elsewhere');
+  el.replaceChildren(h('div', { class: 'modal', style: { padding: '26px', textAlign: 'center', width: 'min(440px,100%)' } },
+    h('div', { style: { font: '64px/0.7 var(--font-quote)', color: 'var(--accent)', marginBottom: '10px' }, text: '“' }),
+    h('p', { class: 'mtext', text }), h('button', { class: 'btn primary', text: btn, onclick: fn })));
+  el.hidden = false;
+}
+async function boot() {
+  loadUI(); applyTheme();
+  try { bc = new BroadcastChannel('quotes-app'); } catch (e) { bc = null; }
+  if (bc) bc.onmessage = async e => {
+    if (!e.data || e.data.from === App.tab) return;
+    if (e.data.t === 'takeover' && App.owner) {
+      await flush();
+      App.owner = false; App.booted = false; clearTimeout(Sync.timer);
+      if (releaseLock) releaseLock();
+      showElsewhere('Quotes is now open in another tab or window.', 'Use it here instead', () => location.reload());
+    }
+  };
+  if (!await holdLock(false)) {
+    showElsewhere('Quotes is already open in another tab or window. Using two at once could overwrite changes.', 'Use it here instead', async () => {
+      if (bc) bc.postMessage({ t: 'takeover', from: App.tab });
+      $('#elsewhere').hidden = true;
+      await holdLock(true);
+      start();
+    });
+    return;
+  }
+  start();
+}
+async function start() {
+  App.owner = true;
+  await Store.open();
+  try { await loadState(); }
+  catch (e) {
+    App.readFailed = true; applyState(null);
+    logEvent('error', 'Could not read saved quotes: ' + (e && e.message || e));
+  }
+  bindUI();
+  let capture = null, link = null;
+  if (/^#capture=/.test(location.hash)) capture = readCaptureHash();
+  if (/^#sync=/.test(location.hash)) link = readSetupHash();
+  const hv = location.hash.slice(1);
+  App.view = VIEWS.includes(hv) ? hv : 'discover';
+  App.booted = true;
+  render();
+  if (App.readFailed) {
+    $('#banners').append(h('div', { class: 'banner bad' }, h('span', { text: 'This browser couldn’t read your saved quotes, so nothing will be saved until Quotes is reloaded. Your data has not been touched.' }), h('button', { class: 'btn sm', text: 'Reload', onclick: () => location.reload() })));
+    return;
+  }
+  syncInit();
+  if (link) offerSetupLink(link);
+  if (capture) openEditor(null, capture);
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => { });
+  if (App.quotes.size) requestPersist();
+}
+function bindUI() {
+  $('#capture-btn').replaceChildren(h('span', { icon: 'plus' }), 'Capture', h('kbd', { text: 'N', style: { marginLeft: 'auto', background: 'transparent', color: 'inherit', borderColor: 'rgba(255,255,255,.35)' } }));
+  $('#nav-discover').replaceChildren(h('span', { icon: 'sparkle' }), 'Discover');
+  $('#nav-library').replaceChildren(h('span', { icon: 'books' }), 'Library', h('span', { class: 'ct', id: 'ct-lib' }));
+  $('#nav-trash').replaceChildren(h('span', { icon: 'trash' }), 'Trash', h('span', { class: 'ct', id: 'ct-trash' }));
+  $('#settings-btn').innerHTML = ICON.gear; $('#menu-btn').innerHTML = ICON.menu; $('#capture-btn-2').innerHTML = ICON.plus;
+  $('#build-tag').textContent = typeof BUILD === 'string' ? BUILD : '';
+  $('#capture-btn').onclick = () => openEditor();
+  $('#capture-btn-2').onclick = () => openEditor();
+  $('#menu-btn').onclick = openRail;
+  $$('.nav [data-view]').forEach(b => { b.onclick = () => { if (b.dataset.view === 'library' && App.view === 'library') setFilter({ tag: null, author: null, source: null }); else setView(b.dataset.view); }; });
+  $('#settings-btn').onclick = () => openSettings();
+  $('#sync-pill').onclick = () => conflictCount() ? openConflicts() : openSettings('sync');
+  $('#file-in').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) onFile(f, e.target.dataset.mode); e.target.value = ''; });
+  $('.main').addEventListener('click', e => { if ($('.app').classList.contains('railopen') && !e.target.closest('#menu-btn')) closeRail(); });
+  window.addEventListener('dragover', e => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) e.preventDefault(); });
+  window.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (!f) return; e.preventDefault(); if (/\.json$/i.test(f.name) || f.type === 'application/json') onFile(f, 'import'); else toast('Drop a .json file to import.'); });
+  window.addEventListener('hashchange', () => {
+    if (/^#capture=/.test(location.hash)) { const c = readCaptureHash(); if (c) openEditor(null, c); return; }
+    if (/^#sync=/.test(location.hash)) { const l = readSetupHash(); if (l) offerSetupLink(l); return; }
+    const v = location.hash.slice(1); if (VIEWS.includes(v) && v !== App.view) setView(v, true);
+  });
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; });
+  document.addEventListener('keydown', onKey);
+}
+function currentQuote() {
+  if (App.readerId) return App.quotes.get(App.readerId);
+  if (App.view === 'discover' && App.ui.daily) return App.quotes.get(App.ui.daily.cur);
+  return null;
+}
+function onKey(e) {
+  if (!App.booted || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (document.querySelector('#modal-root .scrim') || !$('#elsewhere').hidden) return;
+  const t = e.target;
+  if (t && t.closest && t.closest('input,textarea,select,[contenteditable]')) return;
+  const k = e.key, onDisc = App.view === 'discover' && !App.readerId;
+  if (k === 'n' || k === 'N') { e.preventDefault(); openEditor(); }
+  else if (k === '/') { e.preventDefault(); if (App.view !== 'library') setView('library'); setTimeout(() => { const q = $('#q'); if (q) { q.focus(); q.select(); } }, 0); }
+  else if (k === 'd') setView('discover');
+  else if (k === 'l') setView('library');
+  else if (k === 'Escape') { if (App.readerId) closeReader(); else closeRail(); }
+  else if (onDisc && (k === 'ArrowRight' || k === 'j' || (k === ' ' && !(t && t.closest && t.closest('button,a'))))) { e.preventDefault(); discNext(); }
+  else if (onDisc && (k === 'ArrowLeft' || k === 'k')) { e.preventDefault(); discPrev(); }
+  else if (k === 's' && App.view === 'discover') discShuffle();
+  else if (k === 'r') { if (App.view === 'library') libRandom(); else if (App.view === 'discover') discShuffle(); }
+  else if (k === 'c') { const q = currentQuote(); if (q) copyQuote(q); }
+  else if (k === 'e') { const q = currentQuote(); if (q && !q.deleted_at) openEditor(q.id); }
+  else if (k === 'Delete') { const q = App.readerId && App.quotes.get(App.readerId); if (q && !q.deleted_at) trashQuote(q.id); }
+}
+boot();
+
+</script>
+</body>
+</html>
